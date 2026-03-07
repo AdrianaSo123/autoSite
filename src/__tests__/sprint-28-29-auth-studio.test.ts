@@ -6,10 +6,25 @@ jest.mock("@/lib/posts", () => ({
     getAllPosts: () => [],
 }));
 
+// Mock NextAuth to avoid ESM import errors in Jest
+jest.mock("next-auth", () => {
+    return function NextAuth() {
+        return {
+            handlers: {},
+            signIn: jest.fn(),
+            signOut: jest.fn(),
+            auth: jest.fn(),
+        };
+    };
+});
+jest.mock("next-auth/providers/credentials", () => jest.fn());
+jest.mock("next-auth/providers/google", () => jest.fn());
+
 import { isAdmin } from "@/lib/auth";
 
 describe("Sprint 28 — Google Authentication", () => {
     it("isAdmin returns true for admin email", () => {
+        // Uses process.env.ADMIN_EMAIL fallback "admin@example.com"
         expect(isAdmin("admin@example.com")).toBe(true);
     });
 
