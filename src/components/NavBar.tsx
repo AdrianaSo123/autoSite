@@ -5,8 +5,6 @@ import { useSession, signIn, signOut } from "next-auth/react";
 
 export default function NavBar() {
     const { data: session } = useSession();
-    const isAdmin = session?.user?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL
-        || session?.user?.email === "admin@example.com";
 
     return (
         <nav className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">

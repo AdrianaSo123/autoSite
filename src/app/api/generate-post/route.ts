@@ -7,7 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { generatePost } from "@/lib/post-generator";
+import { generatePostFromTranscript } from "@/lib/post-generator";
 
 export async function POST(request: NextRequest) {
     if (process.env.NODE_ENV === "production") {
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const result = await generatePost(transcript || transcriptFile);
+        const result = await generatePostFromTranscript(transcript || transcriptFile);
         return NextResponse.json(result);
     } catch (error) {
         console.error("Post generation error:", error);

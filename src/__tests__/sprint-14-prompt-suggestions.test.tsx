@@ -5,7 +5,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import HomeClient from "@/components/HomeClient";
 
 jest.mock("next/navigation", () => ({
-  useRouter: jest.fn(() => ({ push: jest.fn() })),
+    useRouter: jest.fn(() => ({ push: jest.fn() })),
 }));
 
 global.fetch = jest.fn(() =>
@@ -14,24 +14,20 @@ global.fetch = jest.fn(() =>
     })
 ) as jest.Mock;
 
-const mockPosts = [
-    { slug: "test", title: "Test", date: "2026-03-06", excerpt: "Test." },
-];
-
 describe("Sprint 14 — Chat Prompt Suggestions", () => {
     beforeEach(() => {
         (global.fetch as jest.Mock).mockClear();
     });
 
     it("displays suggestion buttons", () => {
-        render(<HomeClient posts={mockPosts} />);
+        render(<HomeClient />);
         expect(screen.getByText("Show recent posts")).toBeTruthy();
         expect(screen.getByText("What is this project?")).toBeTruthy();
         expect(screen.getByText("Help")).toBeTruthy();
     });
 
     it("sends message directly when clicking a prompt suggestion", async () => {
-        render(<HomeClient posts={mockPosts} />);
+        render(<HomeClient />);
         const button = screen.getByText("Show recent posts");
         fireEvent.click(button);
 
