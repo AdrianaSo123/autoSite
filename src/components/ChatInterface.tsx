@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 interface Message {
     id: string;
@@ -21,6 +22,7 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
     const [isLoading, setIsLoading] = useState(false);
     const [hasNotified, setHasNotified] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const router = useRouter();
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -64,6 +66,13 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
             };
 
             setMessages((prev) => [...prev, assistantMessage]);
+
+            if (data.action === "open_admin_studio") {
+                // Short delay to let the message render before redirect
+                setTimeout(() => {
+                    router.push("/studio");
+                }, 800);
+            }
         } catch {
             setMessages((prev) => [
                 ...prev,

@@ -4,6 +4,10 @@
 import { render, screen } from "@testing-library/react";
 import HomeClient from "@/components/HomeClient";
 
+jest.mock("next/navigation", () => ({
+  useRouter: jest.fn(() => ({ push: jest.fn() })),
+}));
+
 global.fetch = jest.fn(() =>
     Promise.resolve({
         json: () => Promise.resolve({ reply: "Hi!" }),

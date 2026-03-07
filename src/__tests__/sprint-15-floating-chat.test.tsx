@@ -4,6 +4,10 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import FloatingChat from "@/components/FloatingChat";
 
+jest.mock("next/navigation", () => ({
+  useRouter: jest.fn(() => ({ push: jest.fn() })),
+}));
+
 // Mock fetch
 global.fetch = jest.fn(() =>
     Promise.resolve({

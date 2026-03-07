@@ -12,6 +12,14 @@ export interface CommandResult {
 export async function routeCommand(message: string): Promise<CommandResult> {
     const lower = message.toLowerCase().trim();
 
+    // Hidden admin access
+    if (lower === "/admin" || lower === "/studio") {
+        return {
+            reply: "Opening admin studio...",
+            action: "open_admin_studio"
+        };
+    }
+
     // Show recent posts
     if (lower.includes("recent posts") || lower.includes("show posts") || lower.includes("latest posts") || lower.includes("list posts")) {
         return handleShowPosts();

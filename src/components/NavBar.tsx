@@ -28,15 +28,6 @@ export default function NavBar() {
                 >
                     Blog
                 </Link>
-                {isAdmin && (
-                    <Link
-                        href="/studio"
-                        className="hover:opacity-70 transition-opacity"
-                        style={{ color: "var(--ink)" }}
-                    >
-                        Studio
-                    </Link>
-                )}
                 {session ? (
                     <button
                         onClick={() => signOut()}
