@@ -1,4 +1,5 @@
 import { getSiteAnalytics } from "@/lib/mcp/get-site-analytics";
+import { searchBlogPosts, formatSearchResults } from "@/lib/mcp/search-blog-posts";
 import { getAllPosts } from "@/lib/posts";
 
 /**
@@ -32,23 +33,14 @@ export const toolRegistry: MCPTool[] = [
         },
     },
     {
-        name: "searchPosts",
-        description: "Searches blog posts by keyword in title or excerpt.",
+        name: "searchBlogPosts",
+        description: "Search blog posts for a keyword and return matching articles.",
         access: "public",
         async execute(params) {
-            const query = (params?.query as string || "").toLowerCase();
+            const query = (params?.query as string) || "";
             if (!query) return "Please provide a search term.";
-            const posts = getAllPosts();
-            const matches = posts.filter(
-                (p) =>
-                    p.title.toLowerCase().includes(query) ||
-                    p.excerpt.toLowerCase().includes(query)
-            );
-            if (matches.length === 0) return `No posts found matching "${query}".`;
-            const list = matches
-                .map((p, i) => `${i + 1}. ${p.title} (${p.date})`)
-                .join("\n");
-            return `Found ${matches.length} post(s):\n${list}`;
+            const results = await searchBlogPosts(query);
+            return formatSearchResults(query, results);
         },
     },
     {
@@ -112,7 +104,9 @@ export async function agentProcess(
         const keywords = getToolKeywords(tool.name);
         if (keywords.some((kw) => lower.includes(kw))) {
             try {
-                return await tool.execute();
+                // Extract query from the message for search tools
+                const params = extractParams(lower, tool.name);
+                return await tool.execute(params);
             } catch (error) {
                 return `Error executing ${tool.name}: ${error}`;
             }
@@ -130,12 +124,33 @@ export async function agentProcess(
 function getToolKeywords(toolName: string): string[] {
     const keywordMap: Record<string, string[]> = {
         listRecentPosts: ["recent posts", "latest posts", "show posts", "list posts"],
-        searchPosts: ["search", "find posts", "posts about"],
+        searchBlogPosts: ["search", "find posts", "posts about", "search blog", "search posts"],
         getPostSummary: ["post summary", "how many posts", "blog summary"],
         getSiteAnalytics: ["analytics", "visitors", "traffic", "how many people", "page views"],
         getSystemStatus: ["system status", "health", "system check", "platform status"],
     };
     return keywordMap[toolName] || [];
+}
+
+/**
+ * Extract parameters from user message for tool execution.
+ */
+function extractParams(message: string, toolName: string): Record<string, unknown> {
+    if (toolName === "searchBlogPosts") {
+        // Extract the search query from patterns like "find posts about X" or "search X"
+        const patterns = [
+            /posts about (.+)/i,
+            /search (?:for |blog )?(.+)/i,
+            /find (?:posts )?(?:about )?(.+)/i,
+        ];
+        for (const pattern of patterns) {
+            const match = message.match(pattern);
+            if (match) return { query: match[1].trim() };
+        }
+        // Fallback: use the whole message as query
+        return { query: message };
+    }
+    return {};
 }
 
 async function llmAgentProcess(message: string, tools: MCPTool[]): Promise<string> {

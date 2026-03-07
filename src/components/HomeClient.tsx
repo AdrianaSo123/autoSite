@@ -72,8 +72,8 @@ export default function HomeClient({ posts }: HomeClientProps) {
                 )}
             </section>
 
-            {/* ✦ Chat Section */}
-            <section className="w-full max-w-2xl mb-16">
+            {/* ✦ Chat Section — primary interaction area */}
+            <section className="w-full max-w-4xl mb-16">
                 {!hasInteracted && (
                     <div className="text-center mb-6">
                         <span className="sparkle text-sm mr-2">✦</span>

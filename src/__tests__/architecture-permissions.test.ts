@@ -38,9 +38,9 @@ describe("Tool Permission Enforcement", () => {
         expect(postsTool?.access).toBe("public");
     });
 
-    it("public user can access searchPosts", () => {
+    it("public user can access searchBlogPosts", () => {
         const tools = getToolsForUser(false);
-        const searchTool = tools.find((t) => t.name === "searchPosts");
+        const searchTool = tools.find((t) => t.name === "searchBlogPosts");
         expect(searchTool).toBeDefined();
         expect(searchTool?.access).toBe("public");
     });
