@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import Link from "next/link";
+import FloatingChat from "@/components/FloatingChat";
 import "./globals.css";
 
 const geistSans = localFont({
@@ -41,6 +42,7 @@ export default function RootLayout({
           <main className="flex-1 container mx-auto px-4 py-8">
             {children}
           </main>
+          <FloatingChat />
         </div>
       </body>
     </html>
