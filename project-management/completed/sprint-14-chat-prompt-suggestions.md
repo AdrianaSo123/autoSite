@@ -4,7 +4,7 @@
 Guide users by presenting example prompts.
 
 ## Tasks
-- [ ] Add suggested prompts under the chat interface
+- [x] Add suggested prompts under the chat interface
 
 ### Examples
 - Show recent posts
@@ -17,7 +17,7 @@ Guide users by presenting example prompts.
 - clicking a prompt sends a chat message
 
 ## Verification
-- [ ] prompts trigger correct responses
+- [x] prompts trigger correct responses
 
 ## Tests
-- [ ] prompt button triggers chat request
+- [x] prompt button triggers chat request

@@ -4,7 +4,7 @@
 Allow the site owner to view system activity.
 
 ## Tasks
-- [ ] Create activity panel in /studio showing recent system events
+- [x] Create activity panel in /studio showing recent system events
 
 ### Example
 ```
@@ -18,7 +18,7 @@ Recent Activity
 - activity dashboard
 
 ## Verification
-- [ ] events display correctly
+- [x] events display correctly
 
 ## Tests
-- [ ] dashboard loads log entries
+- [x] dashboard loads log entries

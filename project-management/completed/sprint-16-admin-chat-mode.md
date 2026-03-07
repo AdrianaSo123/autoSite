@@ -9,15 +9,15 @@ Create a restricted conversational control interface for the site owner.
 - Regenerate article
 
 ## Tasks
-- [ ] implement admin route (e.g. /studio)
-- [ ] restrict access using email authentication
-- [ ] enable command execution in admin chat
+- [x] implement admin route (e.g. /studio)
+- [x] restrict access using email authentication
+- [x] enable command execution in admin chat
 
 ## Deliverables
 - admin chat interface operational
 
 ## Verification
-- [ ] commands execute successfully
+- [x] commands execute successfully
 
 ## Tests
-- [ ] unauthorized users cannot access admin tools
+- [x] unauthorized users cannot access admin tools

@@ -7,11 +7,11 @@ Verify the full system pipeline.
 audio → transcription → AI formatting → blog post creation
 
 ## Tasks
-- [ ] create integration tests for full pipeline
-- [ ] verify post appears on blog
+- [x] create integration tests for full pipeline
+- [x] verify post appears on blog
 
 ## Deliverables
 - working E2E tests
 
 ## Verification
-- [ ] full pipeline runs successfully
+- [x] full pipeline runs successfully

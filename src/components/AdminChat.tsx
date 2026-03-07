@@ -2,79 +2,78 @@
 
 import { useState, useRef, useEffect } from "react";
 
-interface Message {
+interface AdminMessage {
     id: string;
-    role: "user" | "assistant";
+    role: "admin" | "system";
     content: string;
     timestamp: Date;
 }
 
-interface ChatInterfaceProps {
-    onFirstMessage?: () => void;
-}
+const ADMIN_COMMANDS = [
+    "Process latest recording",
+    "Publish draft",
+    "Regenerate article",
+    "Show analytics",
+    "System status",
+];
 
-export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {}) {
-    const [messages, setMessages] = useState<Message[]>([
+export default function AdminChat() {
+    const [messages, setMessages] = useState<AdminMessage[]>([
         {
             id: "welcome",
-            role: "assistant",
-            content: "Hello! I'm your AI publishing assistant. Ask me anything or try commands like \"Show recent posts\" or \"What is this project?\"",
+            role: "system",
+            content: "Admin console ready. Enter a command or select one below.",
             timestamp: new Date(),
         },
     ]);
     const [input, setInput] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-    const [hasNotified, setHasNotified] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
-    const sendMessage = async () => {
-        if (!input.trim() || isLoading) return;
+    const executeCommand = async (command?: string) => {
+        const cmd = command || input.trim();
+        if (!cmd || isLoading) return;
 
-        const userMessage: Message = {
+        const adminMsg: AdminMessage = {
             id: Date.now().toString(),
-            role: "user",
-            content: input.trim(),
+            role: "admin",
+            content: cmd,
             timestamp: new Date(),
         };
 
-        setMessages((prev) => [...prev, userMessage]);
+        setMessages((prev) => [...prev, adminMsg]);
         setInput("");
         setIsLoading(true);
-
-        // Notify parent on first user message
-        if (!hasNotified && onFirstMessage) {
-            onFirstMessage();
-            setHasNotified(true);
-        }
 
         try {
             const response = await fetch("/api/chat", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: userMessage.content }),
+                body: JSON.stringify({ message: cmd }),
             });
 
             const data = await response.json();
 
-            const assistantMessage: Message = {
-                id: (Date.now() + 1).toString(),
-                role: "assistant",
-                content: data.reply || "Sorry, I couldn't process that.",
-                timestamp: new Date(),
-            };
-
-            setMessages((prev) => [...prev, assistantMessage]);
+            setMessages((prev) => [
+                ...prev,
+                {
+                    id: (Date.now() + 1).toString(),
+                    role: "system",
+                    content: data.reply || "Command executed.",
+                    timestamp: new Date(),
+                },
+            ]);
         } catch {
             setMessages((prev) => [
                 ...prev,
                 {
                     id: (Date.now() + 1).toString(),
-                    role: "assistant",
-                    content: "Something went wrong. Please try again.",
+                    role: "system",
+                    content: "Error executing command. Please try again.",
                     timestamp: new Date(),
                 },
             ]);
@@ -86,7 +85,7 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
-            sendMessage();
+            executeCommand();
         }
     };
 
@@ -94,25 +93,28 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
         <div
             className="w-full rounded-2xl overflow-hidden"
             style={{
-                border: '1.5px solid var(--ink-border)',
-                background: 'var(--cream-light)',
+                border: "1.5px solid var(--ink-border)",
+                background: "var(--cream-light)",
             }}
         >
-            {/* Messages area */}
-            <div className="h-64 overflow-y-auto p-5 space-y-3">
+            {/* Messages */}
+            <div className="h-80 overflow-y-auto p-5 space-y-3">
                 {messages.map((msg) => (
                     <div
                         key={msg.id}
-                        className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                        className={`flex ${msg.role === "admin" ? "justify-end" : "justify-start"}`}
                     >
                         <div
-                            className="max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed"
+                            className="max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed"
                             style={{
-                                background: msg.role === "user" ? 'var(--ink)' : 'var(--ink-faint)',
-                                color: msg.role === "user" ? 'var(--cream)' : 'var(--ink)',
-                                fontFamily: "'Inter', sans-serif",
+                                background: msg.role === "admin" ? "var(--ink)" : "var(--ink-faint)",
+                                color: msg.role === "admin" ? "var(--cream)" : "var(--ink)",
+                                fontFamily: "'Inter', monospace",
                             }}
                         >
+                            {msg.role === "system" && (
+                                <span className="text-xs opacity-60 block mb-1">⚙ System</span>
+                            )}
                             {msg.content}
                         </div>
                     </div>
@@ -122,56 +124,55 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
                         <div
                             className="rounded-2xl px-4 py-2.5 text-sm"
                             style={{
-                                background: 'var(--ink-faint)',
-                                color: 'var(--text-secondary)',
-                                fontFamily: "'Inter', sans-serif",
+                                background: "var(--ink-faint)",
+                                color: "var(--text-secondary)",
                             }}
                         >
-                            ✦ Thinking...
+                            ✦ Executing...
                         </div>
                     </div>
                 )}
                 <div ref={messagesEndRef} />
             </div>
 
-            {/* Suggested prompts */}
+            {/* Command suggestions */}
             <div
                 className="px-5 py-3 flex gap-2 flex-wrap"
-                style={{ borderTop: '1px solid var(--ink-faint)' }}
+                style={{ borderTop: "1px solid var(--ink-faint)" }}
             >
-                {["Show recent posts", "What is this?", "Help"].map((prompt) => (
+                {ADMIN_COMMANDS.map((cmd) => (
                     <button
-                        key={prompt}
-                        onClick={() => { setInput(prompt); }}
+                        key={cmd}
+                        onClick={() => executeCommand(cmd)}
                         className="pill-button-outline text-xs py-1.5 px-3"
-                        style={{ borderRadius: '999px', fontSize: '0.7rem' }}
+                        style={{ borderRadius: "999px", fontSize: "0.7rem" }}
                     >
-                        {prompt}
+                        {cmd}
                     </button>
                 ))}
             </div>
 
-            {/* Input area */}
+            {/* Input */}
             <div
                 className="p-4 flex gap-3"
-                style={{ borderTop: '1px solid var(--ink-border)' }}
+                style={{ borderTop: "1px solid var(--ink-border)" }}
             >
                 <input
                     type="text"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="What would you like to explore?"
+                    placeholder="Enter admin command..."
                     className="pill flex-1 text-sm"
-                    style={{ fontFamily: "'Inter', sans-serif" }}
+                    style={{ fontFamily: "'Inter', monospace" }}
                     disabled={isLoading}
                 />
                 <button
-                    onClick={sendMessage}
+                    onClick={() => executeCommand()}
                     disabled={isLoading || !input.trim()}
                     className="pill-button text-sm disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                    Send
+                    Execute
                 </button>
             </div>
         </div>

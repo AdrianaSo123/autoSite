@@ -4,17 +4,17 @@
 Allow the chat interface to be opened from any page.
 
 ## Tasks
-- [ ] implement floating action button (FAB)
-- [ ] open chat panel when clicked
-- [ ] maintain chat history state
+- [x] implement floating action button (FAB)
+- [x] open chat panel when clicked
+- [x] maintain chat history state
 
 ## Deliverables
 - floating chat button visible
 - chat panel expands from button
 
 ## Verification
-- [ ] chat works across pages
+- [x] chat works across pages
 
 ## Tests
-- [ ] FAB click opens chat panel
-- [ ] messages persist during session
+- [x] FAB click opens chat panel
+- [x] messages persist during session

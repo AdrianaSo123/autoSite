@@ -14,8 +14,8 @@ Create the first MCP tool for the platform.
 - most popular articles
 
 ## Tasks
-- [ ] integrate Vercel analytics or analytics API
-- [ ] expose analytics through MCP tool
+- [x] integrate Vercel analytics or analytics API
+- [x] expose analytics through MCP tool
 
 ## Example Usage
 User asks: "How many people visited today?"
@@ -25,7 +25,7 @@ System calls: `getSiteAnalytics()`
 - analytics MCP tool operational
 
 ## Verification
-- [ ] chat returns visitor statistics
+- [x] chat returns visitor statistics
 
 ## Tests
-- [ ] analytics tool returns valid response
+- [x] analytics tool returns valid response
