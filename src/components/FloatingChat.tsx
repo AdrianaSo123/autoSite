@@ -10,12 +10,27 @@ export default function FloatingChat() {
         <>
             {/* Chat Panel */}
             {isOpen && (
-                <div className="fixed bottom-20 right-4 z-50 w-[380px] max-h-[500px] rounded-xl shadow-2xl border bg-white dark:bg-gray-900 dark:border-gray-700 overflow-hidden animate-in slide-in-from-bottom-4">
-                    <div className="flex items-center justify-between px-4 py-3 border-b dark:border-gray-700 bg-blue-600 text-white">
-                        <span className="font-semibold text-sm">AI Assistant</span>
+                <div
+                    className="fixed bottom-20 right-4 z-50 w-[380px] max-h-[500px] rounded-2xl overflow-hidden"
+                    style={{
+                        boxShadow: '0 8px 40px rgba(43, 58, 142, 0.15)',
+                        border: '1.5px solid var(--ink-border)',
+                        background: 'var(--cream)',
+                    }}
+                >
+                    <div
+                        className="flex items-center justify-between px-5 py-3"
+                        style={{
+                            background: 'var(--ink)',
+                            color: 'var(--cream)',
+                            fontFamily: "'Playfair Display', serif",
+                        }}
+                    >
+                        <span className="font-semibold text-sm">✦ AI Assistant ✦</span>
                         <button
                             onClick={() => setIsOpen(false)}
-                            className="text-white hover:text-gray-200 text-lg leading-none"
+                            className="hover:opacity-70 text-lg leading-none transition-opacity"
+                            style={{ color: 'var(--cream)' }}
                         >
                             ✕
                         </button>
@@ -27,10 +42,15 @@ export default function FloatingChat() {
             {/* Floating Action Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="fixed bottom-4 right-4 z-50 w-14 h-14 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 hover:shadow-xl transition-all flex items-center justify-center text-2xl"
+                className="fixed bottom-4 right-4 z-50 w-14 h-14 rounded-full flex items-center justify-center text-xl transition-all"
+                style={{
+                    background: 'var(--ink)',
+                    color: 'var(--cream)',
+                    boxShadow: '0 4px 20px rgba(43, 58, 142, 0.3)',
+                }}
                 aria-label="Open chat"
             >
-                {isOpen ? "✕" : "💬"}
+                {isOpen ? "✕" : "✦"}
             </button>
         </>
     );

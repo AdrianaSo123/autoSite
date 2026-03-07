@@ -10,24 +10,46 @@ export default function BlogPage() {
     const posts = getAllPosts();
 
     return (
-        <div className="max-w-3xl mx-auto">
-            <h1 className="text-3xl font-bold mb-8">Blog</h1>
-            <div className="flex flex-col gap-6">
+        <div className="max-w-3xl mx-auto fade-in-up">
+            <div className="text-center mb-10">
+                <div className="flex justify-center gap-4 mb-4">
+                    <span className="sparkle text-sm">✦</span>
+                    <span className="sparkle text-xs" style={{ animationDelay: '0.5s' }}>✦</span>
+                    <span className="sparkle text-sm" style={{ animationDelay: '1s' }}>✦</span>
+                </div>
+                <h1
+                    className="text-4xl font-semibold mb-3"
+                    style={{ fontFamily: "'Playfair Display', serif", color: 'var(--ink)' }}
+                >
+                    Blog
+                </h1>
+                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                    Ideas, articles, and thoughts — all from voice to page.
+                </p>
+                <div className="ink-divider max-w-xs mx-auto mt-6" />
+            </div>
+
+            <div className="flex flex-col gap-5">
                 {posts.map((post) => (
-                    <article
-                        key={post.slug}
-                        className="border rounded-lg p-6 hover:shadow-md transition-shadow"
-                    >
+                    <article key={post.slug} className="ink-card group">
                         <Link href={`/blog/${post.slug}`}>
-                            <h2 className="text-xl font-semibold mb-2 hover:underline">
+                            <h2
+                                className="text-xl font-semibold mb-1 group-hover:opacity-80 transition-opacity"
+                                style={{ fontFamily: "'Playfair Display', serif", color: 'var(--ink)' }}
+                            >
                                 {post.title}
                             </h2>
                         </Link>
-                        <p className="text-sm text-gray-500 mb-3">{post.date}</p>
-                        <p className="text-gray-600 dark:text-gray-400">{post.excerpt}</p>
+                        <p className="text-xs mb-3" style={{ color: 'var(--text-secondary)' }}>
+                            {post.date}
+                        </p>
+                        <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                            {post.excerpt}
+                        </p>
                         <Link
                             href={`/blog/${post.slug}`}
-                            className="text-blue-600 dark:text-blue-400 text-sm mt-3 inline-block hover:underline"
+                            className="text-sm mt-3 inline-block hover:opacity-70 transition-opacity"
+                            style={{ color: 'var(--ink)', fontFamily: "'Playfair Display', serif", fontStyle: 'italic' }}
                         >
                             Read more →
                         </Link>

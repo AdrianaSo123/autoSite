@@ -32,18 +32,29 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     const htmlContent = await getPostHtml(post.content);
 
     return (
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-3xl mx-auto fade-in-up">
             <Link
                 href="/blog"
-                className="text-blue-600 dark:text-blue-400 hover:underline text-sm mb-6 inline-block"
+                className="text-sm mb-8 inline-block hover:opacity-70 transition-opacity"
+                style={{ color: 'var(--ink)', fontFamily: "'Playfair Display', serif", fontStyle: 'italic' }}
             >
                 ← Back to Blog
             </Link>
             <article>
-                <h1 className="text-3xl font-bold mb-2">{post.title}</h1>
-                <p className="text-sm text-gray-500 mb-8">{post.date}</p>
+                <div className="flex items-center gap-2 mb-2">
+                    <span className="sparkle text-xs">✦</span>
+                    <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{post.date}</p>
+                </div>
+                <h1
+                    className="text-4xl font-semibold mb-8 leading-tight"
+                    style={{ fontFamily: "'Playfair Display', serif", color: 'var(--ink)' }}
+                >
+                    {post.title}
+                </h1>
+                <div className="ink-divider mb-8" />
                 <div
-                    className="prose dark:prose-invert max-w-none"
+                    className="prose max-w-none text-sm leading-relaxed"
+                    style={{ color: 'var(--text-primary)', fontFamily: "'Inter', sans-serif" }}
                     dangerouslySetInnerHTML={{ __html: htmlContent }}
                 />
             </article>

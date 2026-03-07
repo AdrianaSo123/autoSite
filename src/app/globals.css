@@ -2,22 +2,172 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600&display=swap');
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --cream: #F5F0E8;
+  --cream-light: #FAF7F2;
+  --ink: #2B3A8E;
+  --ink-light: #4A5CB8;
+  --ink-faint: rgba(43, 58, 142, 0.08);
+  --ink-border: rgba(43, 58, 142, 0.2);
+  --text-primary: #2B3A8E;
+  --text-secondary: rgba(43, 58, 142, 0.6);
+  --background: var(--cream);
+  --foreground: var(--ink);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--text-primary);
+  background: var(--cream);
+  font-family: 'Inter', -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Playfair Display', Georgia, serif;
+  color: var(--ink);
+}
+
+/* ✦ Decorative sparkle animation */
+@keyframes sparkle {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.sparkle {
+  animation: sparkle 3s ease-in-out infinite;
+  color: var(--ink);
+}
+
+.float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+/* Pill-shaped inputs and buttons */
+.pill {
+  border-radius: 999px;
+  border: 1.5px solid var(--ink-border);
+  padding: 0.6rem 1.4rem;
+  background: var(--cream-light);
+  color: var(--ink);
+  transition: all 0.3s ease;
+}
+
+.pill:hover {
+  border-color: var(--ink);
+  box-shadow: 0 2px 12px rgba(43, 58, 142, 0.1);
+}
+
+.pill:focus {
+  outline: none;
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px var(--ink-faint);
+}
+
+.pill-button {
+  border-radius: 999px;
+  border: 1.5px solid var(--ink);
+  padding: 0.6rem 1.6rem;
+  background: var(--ink);
+  color: var(--cream);
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.pill-button:hover {
+  background: var(--ink-light);
+  box-shadow: 0 4px 16px rgba(43, 58, 142, 0.2);
+  transform: translateY(-1px);
+}
+
+.pill-button-outline {
+  border-radius: 999px;
+  border: 1.5px solid var(--ink);
+  padding: 0.6rem 1.6rem;
+  background: transparent;
+  color: var(--ink);
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.pill-button-outline:hover {
+  background: var(--ink-faint);
+  transform: translateY(-1px);
+}
+
+/* Decorative divider */
+.ink-divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--ink-border),
+    var(--ink),
+    var(--ink-border),
+    transparent
+  );
+  margin: 2rem 0;
+}
+
+/* Card style */
+.ink-card {
+  border: 1.5px solid var(--ink-border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  background: var(--cream-light);
+  transition: all 0.3s ease;
+}
+
+.ink-card:hover {
+  border-color: var(--ink-light);
+  box-shadow: 0 4px 20px rgba(43, 58, 142, 0.08);
+  transform: translateY(-2px);
+}
+
+/* Prose styling for blog content */
+.prose h1, .prose h2, .prose h3 {
+  font-family: 'Playfair Display', Georgia, serif;
+  color: var(--ink);
+}
+
+.prose a {
+  color: var(--ink);
+  text-decoration-color: var(--ink-border);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.3s;
+}
+
+.prose a:hover {
+  text-decoration-color: var(--ink);
+}
+
+/* Override tailwind dark mode — we stay cream */
+.dark body, body {
+  background: var(--cream) !important;
+  color: var(--text-primary) !important;
 }
 
 @layer utilities {
