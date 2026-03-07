@@ -1,50 +1,37 @@
+/**
+ * ⚠️ DEVELOPMENT / DEMO ROUTE ONLY
+ *
+ * This endpoint is NOT part of the production pipeline.
+ * The canonical pipeline uses an external transcription server.
+ * This route exists for local development and demonstration only.
+ */
+
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
 import { transcribeAudio } from "@/lib/transcription";
 
-const uploadsDir = path.join(process.cwd(), "uploads");
-
 export async function POST(request: NextRequest) {
+    if (process.env.NODE_ENV === "production") {
+        return NextResponse.json(
+            { error: "Transcription is handled by the external pipeline in production." },
+            { status: 403 }
+        );
+    }
+
     try {
-        const body = await request.json();
-        const { fileName } = body;
+        const { fileName, transcript } = await request.json();
+
+        if (transcript) {
+            return NextResponse.json({ transcript });
+        }
 
         if (!fileName) {
-            return NextResponse.json(
-                { error: "fileName is required." },
-                { status: 400 }
-            );
+            return NextResponse.json({ error: "fileName is required." }, { status: 400 });
         }
 
-        const audioPath = path.join(uploadsDir, fileName);
-
-        if (!fs.existsSync(audioPath)) {
-            return NextResponse.json(
-                { error: `Audio file not found: ${fileName}` },
-                { status: 404 }
-            );
-        }
-
-        const result = await transcribeAudio(audioPath);
-
-        if (!result.success) {
-            return NextResponse.json(
-                { error: result.error },
-                { status: 500 }
-            );
-        }
-
-        return NextResponse.json({
-            success: true,
-            transcript: result.transcript,
-            transcriptFile: result.fileName,
-        });
+        const result = await transcribeAudio(fileName);
+        return NextResponse.json({ transcript: result });
     } catch (error) {
-        console.error("Transcription route error:", error);
-        return NextResponse.json(
-            { error: "Failed to transcribe audio." },
-            { status: 500 }
-        );
+        console.error("Transcription error:", error);
+        return NextResponse.json({ error: "Transcription failed." }, { status: 500 });
     }
 }

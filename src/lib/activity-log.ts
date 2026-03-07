@@ -1,7 +1,11 @@
 /**
- * Activity Log System
+ * Activity Log System — Persistent JSON storage
  * Tracks system events for transparency and admin visibility.
+ * Persists to /logs/activity.json so entries survive server restarts.
  */
+
+import fs from "fs";
+import path from "path";
 
 export type ActivityType =
     | "audio_uploaded"
@@ -17,11 +21,39 @@ export interface ActivityEntry {
     metadata: Record<string, unknown>;
 }
 
-// In-memory activity log (in production, would be stored in a database)
-const activityLog: ActivityEntry[] = [];
+const LOG_DIR = path.join(process.cwd(), "logs");
+const LOG_FILE = path.join(LOG_DIR, "activity.json");
+const MAX_ENTRIES = 500;
 
 /**
- * Log a system activity event.
+ * Read the log file from disk.
+ */
+function readLog(): ActivityEntry[] {
+    try {
+        if (!fs.existsSync(LOG_FILE)) return [];
+        const raw = fs.readFileSync(LOG_FILE, "utf8");
+        return JSON.parse(raw) as ActivityEntry[];
+    } catch {
+        return [];
+    }
+}
+
+/**
+ * Write the log to disk.
+ */
+function writeLog(entries: ActivityEntry[]): void {
+    try {
+        if (!fs.existsSync(LOG_DIR)) {
+            fs.mkdirSync(LOG_DIR, { recursive: true });
+        }
+        fs.writeFileSync(LOG_FILE, JSON.stringify(entries, null, 2), "utf8");
+    } catch (error) {
+        console.error("Failed to write activity log:", error);
+    }
+}
+
+/**
+ * Log a system activity event. Persists to JSON file.
  */
 export function logActivity(
     type: ActivityType,
@@ -34,13 +66,15 @@ export function logActivity(
         metadata,
     };
 
-    activityLog.unshift(entry); // newest first
+    const log = readLog();
+    log.unshift(entry); // newest first
 
-    // Keep log to a reasonable size
-    if (activityLog.length > 500) {
-        activityLog.length = 500;
+    // Cap at max entries
+    if (log.length > MAX_ENTRIES) {
+        log.length = MAX_ENTRIES;
     }
 
+    writeLog(log);
     return entry;
 }
 
@@ -48,15 +82,14 @@ export function logActivity(
  * Get the activity log, newest first.
  */
 export function getActivityLog(limit?: number): ActivityEntry[] {
-    if (limit) {
-        return activityLog.slice(0, limit);
-    }
-    return activityLog;
+    const log = readLog();
+    if (limit) return log.slice(0, limit);
+    return log;
 }
 
 /**
  * Get log entries filtered by type.
  */
 export function getActivitiesByType(type: ActivityType): ActivityEntry[] {
-    return activityLog.filter((e) => e.type === type);
+    return readLog().filter((e) => e.type === type);
 }

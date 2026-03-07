@@ -31,6 +31,11 @@ yarn-error.log*
 # vercel
 .vercel
 
+# runtime data (not persisted in repo)
+/logs
+/uploads
+/transcripts
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

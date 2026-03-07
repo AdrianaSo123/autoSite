@@ -1,48 +1,47 @@
+/**
+ * ⚠️ DEVELOPMENT / DEMO ROUTE ONLY
+ *
+ * This endpoint is NOT part of the production pipeline.
+ * The canonical audio publishing pipeline is:
+ *   Recording App → External Server → Whisper → AI Formatting → Git Commit → Vercel Redeploy
+ *
+ * Next.js should NOT handle persistent file storage in production (serverless).
+ * This route exists for local development and demonstration purposes only.
+ */
+
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 
-const uploadsDir = path.join(process.cwd(), "uploads");
-
 export async function POST(request: NextRequest) {
+    if (process.env.NODE_ENV === "production") {
+        return NextResponse.json(
+            { error: "Audio upload is handled by the external recording pipeline in production." },
+            { status: 403 }
+        );
+    }
+
     try {
-        // Ensure uploads directory exists
+        const formData = await request.formData();
+        const file = formData.get("audio") as File;
+
+        if (!file) {
+            return NextResponse.json({ error: "No audio file provided." }, { status: 400 });
+        }
+
+        const uploadsDir = path.join(process.cwd(), "uploads");
         if (!fs.existsSync(uploadsDir)) {
             fs.mkdirSync(uploadsDir, { recursive: true });
         }
 
-        const formData = await request.formData();
-        const file = formData.get("audio") as File | null;
-
-        if (!file) {
-            return NextResponse.json(
-                { error: "No audio file provided. Use the 'audio' field." },
-                { status: 400 }
-            );
-        }
-
-        // Generate unique filename
-        const timestamp = Date.now();
-        const originalName = file.name || "recording.webm";
-        const fileName = `${timestamp}-${originalName}`;
+        const fileName = `${Date.now()}-${file.name}`;
         const filePath = path.join(uploadsDir, fileName);
+        const buffer = Buffer.from(await file.arrayBuffer());
+        fs.writeFileSync(filePath, buffer);
 
-        // Write file to disk
-        const bytes = await file.arrayBuffer();
-        fs.writeFileSync(filePath, Buffer.from(bytes));
-
-        return NextResponse.json({
-            success: true,
-            message: "Audio file uploaded successfully.",
-            fileName,
-            size: file.size,
-            type: file.type,
-        });
+        return NextResponse.json({ success: true, fileName });
     } catch (error) {
         console.error("Upload error:", error);
-        return NextResponse.json(
-            { error: "Failed to upload audio file." },
-            { status: 500 }
-        );
+        return NextResponse.json({ error: "Upload failed." }, { status: 500 });
     }
 }
