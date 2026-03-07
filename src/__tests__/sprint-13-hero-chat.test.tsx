@@ -1,5 +1,5 @@
 /**
- * Sprint 13 Tests — Hero Chat Integration (updated for Sprint 25 layout)
+ * Sprint 13 Tests — Hero Chat Integration (updated for Sprint 27 layout)
  */
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import HomeClient from "@/components/HomeClient";
@@ -10,34 +10,30 @@ global.fetch = jest.fn(() =>
     })
 ) as jest.Mock;
 
-const mockPosts = [
-    { slug: "test-post", title: "Test Post", date: "2026-03-06", excerpt: "A test post." },
-];
-
 describe("Sprint 13 — Hero Chat Integration", () => {
     beforeEach(() => {
         (global.fetch as jest.Mock).mockClear();
     });
 
     it("renders the homepage with a chat interface", () => {
-        render(<HomeClient posts={mockPosts} />);
+        render(<HomeClient />);
         expect(screen.getByPlaceholderText(/What would you like to explore/i)).toBeTruthy();
     });
 
     it("displays a welcome message inside the chat on load", () => {
-        render(<HomeClient posts={mockPosts} />);
+        render(<HomeClient />);
         expect(screen.getByText(/Welcome to AI Platform/i)).toBeTruthy();
     });
 
     it("has a chat input that accepts text", () => {
-        render(<HomeClient posts={mockPosts} />);
+        render(<HomeClient />);
         const input = screen.getByPlaceholderText(/What would you like to explore/i);
         fireEvent.change(input, { target: { value: "Show recent posts" } });
         expect(input).toHaveValue("Show recent posts");
     });
 
     it("sends a message when the user submits", async () => {
-        render(<HomeClient posts={mockPosts} />);
+        render(<HomeClient />);
         const input = screen.getByPlaceholderText(/What would you like to explore/i);
         const sendButton = screen.getByText("Send");
 
@@ -49,14 +45,8 @@ describe("Sprint 13 — Hero Chat Integration", () => {
         });
     });
 
-    it("displays recent posts section", () => {
-        render(<HomeClient posts={mockPosts} />);
-        expect(screen.getByText("Recent Posts")).toBeTruthy();
-        expect(screen.getByText("Test Post")).toBeTruthy();
-    });
-
     it("shows welcome text on load", () => {
-        render(<HomeClient posts={mockPosts} />);
+        render(<HomeClient />);
         expect(screen.getByText(/Welcome to AI Platform/i)).toBeTruthy();
     });
 });

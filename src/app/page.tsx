@@ -1,8 +1,10 @@
-import { getAllPosts } from "@/lib/posts";
 import HomeClient from "@/components/HomeClient";
 
-export default function Home() {
-  const posts = getAllPosts().slice(0, 5);
+export const metadata = {
+  title: "AI Publishing Platform",
+  description: "Conversational AI Publishing Platform",
+};
 
-  return <HomeClient posts={posts} />;
+export default function Home() {
+  return <HomeClient />;
 }
