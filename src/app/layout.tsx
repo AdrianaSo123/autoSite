@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import NavBar from "@/components/NavBar";
 import Providers from "@/components/Providers";
-import FloatingChat from "@/components/FloatingChat";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -25,7 +24,6 @@ export default function RootLayout({
             <main className="flex-1 max-w-5xl mx-auto px-6 py-8 w-full">
               {children}
             </main>
-            <FloatingChat />
           </div>
         </Providers>
       </body>
