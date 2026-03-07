@@ -1,4 +1,4 @@
-# Full Codebase — AI Publishing Platform (Architecture Stabilized)
+# Full Codebase — AI Publishing Platform (Sprints 1–30 Final)
 
 ## Project Structure
 ```
@@ -15,6 +15,10 @@ src/__tests__/sprint-21-activity-dashboard.test.tsx
 src/__tests__/sprint-22-error-handling.test.ts
 src/__tests__/sprint-23-e2e-pipeline.test.ts
 src/__tests__/sprint-24-ux-refinement.test.tsx
+src/__tests__/sprint-25-conversational-layout.test.tsx
+src/__tests__/sprint-27-remove-homepage-sections.test.tsx
+src/__tests__/sprint-28-29-auth-studio.test.ts
+src/__tests__/sprint-mcp-search.test.ts
 src/app/admin/login/page.tsx
 src/app/api/activity/route.ts
 src/app/api/analytics/route.ts
@@ -41,6 +45,7 @@ src/lib/agent.ts
 src/lib/auth.ts
 src/lib/commands.ts
 src/lib/mcp/get-site-analytics.ts
+src/lib/mcp/search-blog-posts.ts
 src/lib/post-generator.ts
 src/lib/posts.ts
 src/lib/transcription.ts
@@ -90,9 +95,9 @@ describe("Tool Permission Enforcement", () => {
         expect(postsTool?.access).toBe("public");
     });
 
-    it("public user can access searchPosts", () => {
+    it("public user can access searchBlogPosts", () => {
         const tools = getToolsForUser(false);
-        const searchTool = tools.find((t) => t.name === "searchPosts");
+        const searchTool = tools.find((t) => t.name === "searchBlogPosts");
         expect(searchTool).toBeDefined();
         expect(searchTool?.access).toBe("public");
     });
@@ -147,26 +152,16 @@ describe("NavBar Visibility", () => {
 ### `src/__tests__/sprint-13-hero-chat.test.tsx`
 ```tsx
 /**
- * Sprint 13 Tests — Hero Chat Integration
+ * Sprint 13 Tests — Hero Chat Integration (updated for Sprint 27 layout)
  */
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import HomeClient from "@/components/HomeClient";
 
-// Mock fetch for chat API
 global.fetch = jest.fn(() =>
     Promise.resolve({
         json: () => Promise.resolve({ reply: "Hello! I'm your assistant." }),
     })
 ) as jest.Mock;
-
-const mockPosts = [
-    {
-        slug: "test-post",
-        title: "Test Post",
-        date: "2026-03-06",
-        excerpt: "A test post excerpt.",
-    },
-];
 
 describe("Sprint 13 — Hero Chat Integration", () => {
     beforeEach(() => {
@@ -174,24 +169,24 @@ describe("Sprint 13 — Hero Chat Integration", () => {
     });
 
     it("renders the homepage with a chat interface", () => {
-        render(<HomeClient posts={mockPosts} />);
+        render(<HomeClient />);
         expect(screen.getByPlaceholderText(/What would you like to explore/i)).toBeTruthy();
     });
 
-    it("displays a greeting message on load", () => {
-        render(<HomeClient posts={mockPosts} />);
-        expect(screen.getByText(/Hello.*AI publishing assistant/i)).toBeTruthy();
+    it("displays a welcome message inside the chat on load", () => {
+        render(<HomeClient />);
+        expect(screen.getByText(/Welcome to AI Platform/i)).toBeTruthy();
     });
 
     it("has a chat input that accepts text", () => {
-        render(<HomeClient posts={mockPosts} />);
+        render(<HomeClient />);
         const input = screen.getByPlaceholderText(/What would you like to explore/i);
         fireEvent.change(input, { target: { value: "Show recent posts" } });
         expect(input).toHaveValue("Show recent posts");
     });
 
     it("sends a message when the user submits", async () => {
-        render(<HomeClient posts={mockPosts} />);
+        render(<HomeClient />);
         const input = screen.getByPlaceholderText(/What would you like to explore/i);
         const sendButton = screen.getByText("Send");
 
@@ -203,15 +198,9 @@ describe("Sprint 13 — Hero Chat Integration", () => {
         });
     });
 
-    it("displays recent posts section", () => {
-        render(<HomeClient posts={mockPosts} />);
-        expect(screen.getByText("Recent Posts")).toBeTruthy();
-        expect(screen.getByText("Test Post")).toBeTruthy();
-    });
-
-    it("shows welcome hero text before interaction", () => {
-        render(<HomeClient posts={mockPosts} />);
-        expect(screen.getByText(/Welcome to/i)).toBeTruthy();
+    it("shows welcome text on load", () => {
+        render(<HomeClient />);
+        expect(screen.getByText(/Welcome to AI Platform/i)).toBeTruthy();
     });
 });
 ```
@@ -221,12 +210,11 @@ describe("Sprint 13 — Hero Chat Integration", () => {
 ### `src/__tests__/sprint-14-prompt-suggestions.test.tsx`
 ```tsx
 /**
- * Sprint 14 Tests — Chat Prompt Suggestions
+ * Sprint 14 Tests — Chat Prompt Suggestions (updated for Sprint 25 layout)
  */
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import HomeClient from "@/components/HomeClient";
 
-// Mock fetch
 global.fetch = jest.fn(() =>
     Promise.resolve({
         json: () => Promise.resolve({ reply: "Here are recent posts..." }),
@@ -245,17 +233,18 @@ describe("Sprint 14 — Chat Prompt Suggestions", () => {
     it("displays suggestion buttons", () => {
         render(<HomeClient posts={mockPosts} />);
         expect(screen.getByText("Show recent posts")).toBeTruthy();
-        expect(screen.getByText("What is this?")).toBeTruthy();
+        expect(screen.getByText("What is this project?")).toBeTruthy();
         expect(screen.getByText("Help")).toBeTruthy();
     });
 
-    it("sets input text when clicking a prompt suggestion", () => {
+    it("sends message directly when clicking a prompt suggestion", async () => {
         render(<HomeClient posts={mockPosts} />);
         const button = screen.getByText("Show recent posts");
         fireEvent.click(button);
 
-        const input = screen.getByPlaceholderText(/What would you like to explore/i);
-        expect(input).toHaveValue("Show recent posts");
+        await waitFor(() => {
+            expect(global.fetch).toHaveBeenCalledWith("/api/chat", expect.any(Object));
+        });
     });
 });
 ```
@@ -789,7 +778,7 @@ describe("Sprint 23 — End-to-End Pipeline Testing", () => {
 ### `src/__tests__/sprint-24-ux-refinement.test.tsx`
 ```tsx
 /**
- * Sprint 24 Tests — UX Refinement
+ * Sprint 24 Tests — UX Refinement (updated for Sprint 27 chat-only homepage)
  */
 import { render, screen } from "@testing-library/react";
 import HomeClient from "@/components/HomeClient";
@@ -800,39 +789,280 @@ global.fetch = jest.fn(() =>
     })
 ) as jest.Mock;
 
-const mockPosts = [
-    { slug: "post-1", title: "First Post", date: "2026-03-06", excerpt: "First post excerpt." },
-    { slug: "post-2", title: "Second Post", date: "2026-03-05", excerpt: "Second post excerpt." },
-];
-
 describe("Sprint 24 — UX Refinement", () => {
-    it("renders blog cards with proper structure", () => {
-        render(<HomeClient posts={mockPosts} />);
-        expect(screen.getByText("First Post")).toBeTruthy();
-        expect(screen.getByText("Second Post")).toBeTruthy();
-    });
-
-    it("shows post dates on cards", () => {
-        render(<HomeClient posts={mockPosts} />);
-        expect(screen.getByText("2026-03-06")).toBeTruthy();
-        expect(screen.getByText("2026-03-05")).toBeTruthy();
-    });
-
-    it("shows excerpts on cards", () => {
-        render(<HomeClient posts={mockPosts} />);
-        expect(screen.getByText("First post excerpt.")).toBeTruthy();
-        expect(screen.getByText("Second post excerpt.")).toBeTruthy();
-    });
-
     it("displays the chat as the primary interaction area", () => {
-        render(<HomeClient posts={mockPosts} />);
+        render(<HomeClient />);
         const input = screen.getByPlaceholderText(/What would you like to explore/i);
         expect(input).toBeTruthy();
     });
 
-    it("shows empty state when no posts exist", () => {
-        render(<HomeClient posts={[]} />);
-        expect(screen.getByText(/No posts yet/i)).toBeTruthy();
+    it("shows the welcome message on load", () => {
+        render(<HomeClient />);
+        expect(screen.getByText(/Welcome to AI Platform/i)).toBeTruthy();
+    });
+
+    it("has prompt suggestion buttons", () => {
+        render(<HomeClient />);
+        expect(screen.getByText("Show recent posts")).toBeTruthy();
+        expect(screen.getByText("Help")).toBeTruthy();
+    });
+});
+```
+
+---
+
+### `src/__tests__/sprint-25-conversational-layout.test.tsx`
+```tsx
+/**
+ * Sprint 25 Tests — Conversational Layout (updated for Sprint 27)
+ */
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import HomeClient from "@/components/HomeClient";
+
+global.fetch = jest.fn(() =>
+    Promise.resolve({
+        json: () => Promise.resolve({ reply: "Here are the recent posts..." }),
+    })
+) as jest.Mock;
+
+describe("Sprint 25 — Conversational Layout", () => {
+    beforeEach(() => {
+        (global.fetch as jest.Mock).mockClear();
+    });
+
+    it("shows hero welcome message inside the chat", () => {
+        render(<HomeClient />);
+        expect(screen.getByText(/conversational publishing platform/i)).toBeTruthy();
+    });
+
+    it("displays prompt suggestion buttons on load", () => {
+        render(<HomeClient />);
+        expect(screen.getByText("Show recent posts")).toBeTruthy();
+        expect(screen.getByText("What is this project?")).toBeTruthy();
+        expect(screen.getByText("Help")).toBeTruthy();
+    });
+
+    it("sends a message when clicking a prompt suggestion", async () => {
+        render(<HomeClient />);
+        const button = screen.getByText("Show recent posts");
+        fireEvent.click(button);
+
+        await waitFor(() => {
+            expect(global.fetch).toHaveBeenCalledWith("/api/chat", expect.any(Object));
+        });
+    });
+
+    it("hides hero content after the first message is sent", async () => {
+        render(<HomeClient />);
+        const input = screen.getByPlaceholderText(/What would you like to explore/i);
+        const sendBtn = screen.getByText("Send");
+
+        fireEvent.change(input, { target: { value: "Hello" } });
+        fireEvent.click(sendBtn);
+
+        await waitFor(() => {
+            expect(screen.queryByText(/conversational publishing platform/i)).toBeNull();
+        });
+    });
+
+    it("chat container has correct data-testid", () => {
+        const { container } = render(<HomeClient />);
+        const chatSection = container.querySelector("[data-testid='chat-container']");
+        expect(chatSection).toBeTruthy();
+    });
+});
+```
+
+---
+
+### `src/__tests__/sprint-27-remove-homepage-sections.test.tsx`
+```tsx
+/**
+ * Sprint 27 Tests — Homepage is conversation-only
+ */
+import { render, screen } from "@testing-library/react";
+import HomeClient from "@/components/HomeClient";
+
+global.fetch = jest.fn(() =>
+    Promise.resolve({
+        json: () => Promise.resolve({ reply: "Hi!" }),
+    })
+) as jest.Mock;
+
+describe("Sprint 27 — Remove Traditional Homepage Sections", () => {
+    it("shows the chat interface on homepage", () => {
+        render(<HomeClient />);
+        expect(screen.getByPlaceholderText(/What would you like to explore/i)).toBeTruthy();
+    });
+
+    it("does NOT show Recent Posts on the homepage", () => {
+        render(<HomeClient />);
+        expect(screen.queryByText("Recent Posts")).toBeNull();
+    });
+
+    it("does NOT show post cards on the homepage", () => {
+        render(<HomeClient />);
+        expect(screen.queryByText("Test Post")).toBeNull();
+    });
+
+    it("shows the welcome message inside the chat", () => {
+        render(<HomeClient />);
+        expect(screen.getByText(/Welcome to AI Platform/i)).toBeTruthy();
+    });
+});
+```
+
+---
+
+### `src/__tests__/sprint-28-29-auth-studio.test.ts`
+```ts
+/**
+ * Sprint 28+29 Tests — Authentication & Studio Access
+ */
+
+jest.mock("@/lib/posts", () => ({
+    getAllPosts: () => [],
+}));
+
+// Mock NextAuth to avoid ESM import errors in Jest
+jest.mock("next-auth", () => {
+    return function NextAuth() {
+        return {
+            handlers: {},
+            signIn: jest.fn(),
+            signOut: jest.fn(),
+            auth: jest.fn(),
+        };
+    };
+});
+jest.mock("next-auth/providers/credentials", () => jest.fn());
+jest.mock("next-auth/providers/google", () => jest.fn());
+
+import { isAdmin } from "@/lib/auth";
+
+describe("Sprint 28 — Google Authentication", () => {
+    it("isAdmin returns true for admin email", () => {
+        // Uses process.env.ADMIN_EMAIL fallback "admin@example.com"
+        expect(isAdmin("admin@example.com")).toBe(true);
+    });
+
+    it("isAdmin returns false for non-admin email", () => {
+        expect(isAdmin("user@example.com")).toBe(false);
+    });
+
+    it("isAdmin returns false for null email", () => {
+        expect(isAdmin(null)).toBe(false);
+    });
+
+    it("isAdmin returns false for undefined email", () => {
+        expect(isAdmin(undefined)).toBe(false);
+    });
+});
+
+describe("Sprint 29 — Admin Studio Access", () => {
+    it("admin user can access studio (isAdmin === true)", () => {
+        const adminEmail = "admin@example.com";
+        expect(isAdmin(adminEmail)).toBe(true);
+    });
+
+    it("non-admin user cannot access studio", () => {
+        const regularEmail = "user@gmail.com";
+        expect(isAdmin(regularEmail)).toBe(false);
+    });
+
+    it("studio nav visibility logic: hidden for non-admin", () => {
+        const session = { user: { email: "random@gmail.com" } };
+        const showStudio = isAdmin(session.user.email);
+        expect(showStudio).toBe(false);
+    });
+
+    it("studio nav visibility logic: shown for admin", () => {
+        const session = { user: { email: "admin@example.com" } };
+        const showStudio = isAdmin(session.user.email);
+        expect(showStudio).toBe(true);
+    });
+});
+```
+
+---
+
+### `src/__tests__/sprint-mcp-search.test.ts`
+```ts
+/**
+ * MCP Tool Test — searchBlogPosts
+ */
+
+jest.mock("@/lib/posts", () => ({
+    getAllPosts: () => [
+        {
+            slug: "building-with-ai",
+            title: "Building with AI: A New Approach",
+            date: "2026-03-05",
+            excerpt: "How AI is transforming software development.",
+            content: "# Building with AI\n\nAI is changing the way we build things.",
+        },
+        {
+            slug: "ai-publishing-platform",
+            title: "Welcome to the AI Publishing Platform",
+            date: "2026-03-06",
+            excerpt: "An introduction to our conversational AI publishing platform.",
+            content: "# Welcome\n\nThis platform turns voice into articles.",
+        },
+        {
+            slug: "weekend-cooking-tips",
+            title: "Weekend Cooking Tips",
+            date: "2026-03-04",
+            excerpt: "Five recipes to try this weekend.",
+            content: "# Cooking\n\nTry these recipes for the weekend.",
+        },
+    ],
+}));
+
+import { searchBlogPosts, formatSearchResults } from "@/lib/mcp/search-blog-posts";
+
+describe("searchBlogPosts MCP Tool", () => {
+    it("returns matching posts when query matches title", async () => {
+        const results = await searchBlogPosts("AI");
+        expect(results.length).toBe(2);
+        expect(results.map((r) => r.slug)).toContain("building-with-ai");
+        expect(results.map((r) => r.slug)).toContain("ai-publishing-platform");
+    });
+
+    it("returns empty array when no posts match", async () => {
+        const results = await searchBlogPosts("blockchain");
+        expect(results).toEqual([]);
+    });
+
+    it("handles case-insensitive search", async () => {
+        const upper = await searchBlogPosts("AI");
+        const lower = await searchBlogPosts("ai");
+        expect(upper.length).toBe(lower.length);
+    });
+
+    it("searches content as well as title", async () => {
+        const results = await searchBlogPosts("recipes");
+        expect(results.length).toBe(1);
+        expect(results[0].slug).toBe("weekend-cooking-tips");
+    });
+
+    it("returns empty for empty query", async () => {
+        const results = await searchBlogPosts("");
+        expect(results).toEqual([]);
+    });
+
+    it("formats results as a readable string", () => {
+        const results = [
+            { slug: "test", title: "Test Post", date: "2026-03-06", excerpt: "Test." },
+        ];
+        const formatted = formatSearchResults("test", results);
+        expect(formatted).toContain("Found 1 post(s)");
+        expect(formatted).toContain("Test Post");
+    });
+
+    it("formats empty results with a helpful message", () => {
+        const formatted = formatSearchResults("xyz", []);
+        expect(formatted).toContain("No posts found");
+        expect(formatted).toContain("xyz");
     });
 });
 ```
@@ -1319,13 +1549,15 @@ export default function RootLayout({
 
 ### `src/app/page.tsx`
 ```tsx
-import { getAllPosts } from "@/lib/posts";
 import HomeClient from "@/components/HomeClient";
 
-export default function Home() {
-  const posts = getAllPosts().slice(0, 5);
+export const metadata = {
+  title: "AI Publishing Platform",
+  description: "Conversational AI Publishing Platform",
+};
 
-  return <HomeClient posts={posts} />;
+export default function Home() {
+  return <HomeClient />;
 }
 ```
 
@@ -1333,7 +1565,7 @@ export default function Home() {
 
 ### `src/app/studio/page.tsx`
 ```tsx
-import { auth } from "@/lib/auth";
+import { auth, isAdmin } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import AdminChat from "@/components/AdminChat";
 import ActivityDashboard from "@/components/ActivityDashboard";
@@ -1345,10 +1577,33 @@ export const metadata = {
 export default async function StudioPage() {
     const session = await auth();
 
+    // Unauthenticated → redirect to sign-in
     if (!session) {
         redirect("/admin/login");
     }
 
+    // Authenticated but not admin → restricted access
+    if (!isAdmin(session.user?.email)) {
+        return (
+            <div className="max-w-3xl mx-auto text-center py-20 fade-in-up">
+                <span className="sparkle text-2xl">✦</span>
+                <h1
+                    className="text-3xl font-semibold mt-4 mb-4"
+                    style={{ fontFamily: "'Playfair Display', serif", color: "var(--ink)" }}
+                >
+                    Studio Access Restricted
+                </h1>
+                <p
+                    className="text-sm"
+                    style={{ color: "var(--text-secondary)", fontFamily: "'Inter', sans-serif" }}
+                >
+                    This area is only available to the site administrator.
+                </p>
+            </div>
+        );
+    }
+
+    // Admin → render full studio
     return (
         <div className="max-w-3xl mx-auto fade-in-up">
             <div className="flex items-center justify-between mb-4">
@@ -1356,12 +1611,12 @@ export default async function StudioPage() {
                     <span className="sparkle text-sm">✦</span>
                     <h1
                         className="text-3xl font-semibold"
-                        style={{ fontFamily: "'Playfair Display', serif", color: 'var(--ink)' }}
+                        style={{ fontFamily: "'Playfair Display', serif", color: "var(--ink)" }}
                     >
                         Studio
                     </h1>
                 </div>
-                <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
                     {session.user?.email}
                 </span>
             </div>
@@ -1370,7 +1625,7 @@ export default async function StudioPage() {
             <div className="mb-6">
                 <p
                     className="text-sm mb-4"
-                    style={{ color: 'var(--text-secondary)', fontFamily: "'Inter', sans-serif" }}
+                    style={{ color: "var(--text-secondary)", fontFamily: "'Inter', sans-serif" }}
                 >
                     Use the admin console below to control the publishing system.
                 </p>
@@ -1718,15 +1973,10 @@ interface ChatInterfaceProps {
     onFirstMessage?: () => void;
 }
 
+const SUGGESTIONS = ["Show recent posts", "What is this project?", "Help"];
+
 export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {}) {
-    const [messages, setMessages] = useState<Message[]>([
-        {
-            id: "welcome",
-            role: "assistant",
-            content: "Hello! I'm your AI publishing assistant. Ask me anything or try commands like \"Show recent posts\" or \"What is this project?\"",
-            timestamp: new Date(),
-        },
-    ]);
+    const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [hasNotified, setHasNotified] = useState(false);
@@ -1736,13 +1986,14 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
-    const sendMessage = async () => {
-        if (!input.trim() || isLoading) return;
+    const sendMessage = async (text?: string) => {
+        const content = text || input.trim();
+        if (!content || isLoading) return;
 
         const userMessage: Message = {
             id: Date.now().toString(),
             role: "user",
-            content: input.trim(),
+            content,
             timestamp: new Date(),
         };
 
@@ -1760,7 +2011,7 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
             const response = await fetch("/api/chat", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: userMessage.content }),
+                body: JSON.stringify({ message: content }),
             });
 
             const data = await response.json();
@@ -1795,16 +2046,68 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
         }
     };
 
+    const isEmpty = messages.length === 0;
+
     return (
         <div
-            className="w-full rounded-2xl overflow-hidden"
+            className="w-full rounded-2xl overflow-hidden flex flex-col"
             style={{
-                border: '1.5px solid var(--ink-border)',
-                background: 'var(--cream-light)',
+                border: "1.5px solid var(--ink-border)",
+                background: "var(--cream-light)",
+                minHeight: "85vh",
             }}
+            data-testid="chat-container"
         >
-            {/* Messages area */}
-            <div className="h-64 overflow-y-auto p-5 space-y-3">
+            {/* Messages area — grows to fill */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-3">
+                {/* ✦ Hero welcome — shown only when no conversation */}
+                {isEmpty && (
+                    <div className="flex flex-col items-center justify-center h-full text-center py-16">
+                        <div className="flex gap-6 mb-6">
+                            <span className="sparkle text-lg" style={{ animationDelay: "0s" }}>✦</span>
+                            <span className="sparkle text-sm" style={{ animationDelay: "0.5s" }}>✦</span>
+                            <span className="sparkle text-lg" style={{ animationDelay: "1s" }}>✦</span>
+                        </div>
+
+                        <h2
+                            className="text-3xl md:text-4xl font-semibold mb-4"
+                            style={{ fontFamily: "'Playfair Display', serif", color: "var(--ink)" }}
+                        >
+                            Welcome to AI Platform
+                        </h2>
+
+                        <p
+                            className="text-base max-w-md mx-auto mb-2 leading-relaxed"
+                            style={{ color: "var(--text-secondary)", fontFamily: "'Inter', sans-serif" }}
+                        >
+                            A conversational publishing platform that transforms
+                            voice recordings into written articles.
+                        </p>
+
+                        <p
+                            className="text-sm mb-8 italic"
+                            style={{ color: "var(--text-secondary)", fontFamily: "'Playfair Display', serif" }}
+                        >
+                            Ask me anything to get started.
+                        </p>
+
+                        {/* Prompt suggestions inside hero */}
+                        <div className="flex gap-3 flex-wrap justify-center">
+                            {SUGGESTIONS.map((prompt) => (
+                                <button
+                                    key={prompt}
+                                    onClick={() => sendMessage(prompt)}
+                                    className="pill-button-outline text-sm py-2 px-5"
+                                    style={{ borderRadius: "999px" }}
+                                >
+                                    {prompt}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Chat messages */}
                 {messages.map((msg) => (
                     <div
                         key={msg.id}
@@ -1813,8 +2116,8 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
                         <div
                             className="max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed"
                             style={{
-                                background: msg.role === "user" ? 'var(--ink)' : 'var(--ink-faint)',
-                                color: msg.role === "user" ? 'var(--cream)' : 'var(--ink)',
+                                background: msg.role === "user" ? "var(--ink)" : "var(--ink-faint)",
+                                color: msg.role === "user" ? "var(--cream)" : "var(--ink)",
                                 fontFamily: "'Inter', sans-serif",
                             }}
                         >
@@ -1827,8 +2130,8 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
                         <div
                             className="rounded-2xl px-4 py-2.5 text-sm"
                             style={{
-                                background: 'var(--ink-faint)',
-                                color: 'var(--text-secondary)',
+                                background: "var(--ink-faint)",
+                                color: "var(--text-secondary)",
                                 fontFamily: "'Inter', sans-serif",
                             }}
                         >
@@ -1839,27 +2142,29 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
                 <div ref={messagesEndRef} />
             </div>
 
-            {/* Suggested prompts */}
-            <div
-                className="px-5 py-3 flex gap-2 flex-wrap"
-                style={{ borderTop: '1px solid var(--ink-faint)' }}
-            >
-                {["Show recent posts", "What is this?", "Help"].map((prompt) => (
-                    <button
-                        key={prompt}
-                        onClick={() => { setInput(prompt); }}
-                        className="pill-button-outline text-xs py-1.5 px-3"
-                        style={{ borderRadius: '999px', fontSize: '0.7rem' }}
-                    >
-                        {prompt}
-                    </button>
-                ))}
-            </div>
+            {/* Prompt suggestions — shown below messages when conversation has started */}
+            {!isEmpty && (
+                <div
+                    className="px-5 py-3 flex gap-2 flex-wrap"
+                    style={{ borderTop: "1px solid var(--ink-faint)" }}
+                >
+                    {SUGGESTIONS.map((prompt) => (
+                        <button
+                            key={prompt}
+                            onClick={() => sendMessage(prompt)}
+                            className="pill-button-outline text-xs py-1.5 px-3"
+                            style={{ borderRadius: "999px", fontSize: "0.7rem" }}
+                        >
+                            {prompt}
+                        </button>
+                    ))}
+                </div>
+            )}
 
             {/* Input area */}
             <div
                 className="p-4 flex gap-3"
-                style={{ borderTop: '1px solid var(--ink-border)' }}
+                style={{ borderTop: "1px solid var(--ink-border)" }}
             >
                 <input
                     type="text"
@@ -1872,7 +2177,7 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
                     disabled={isLoading}
                 />
                 <button
-                    onClick={sendMessage}
+                    onClick={() => sendMessage()}
                     disabled={isLoading || !input.trim()}
                     className="pill-button text-sm disabled:opacity-40 disabled:cursor-not-allowed"
                 >
@@ -1953,141 +2258,14 @@ export default function FloatingChat() {
 ```tsx
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
 import ChatInterface from "@/components/ChatInterface";
 
-interface HomeClientProps {
-    posts: { slug: string; title: string; date: string; excerpt: string }[];
-}
-
-export default function HomeClient({ posts }: HomeClientProps) {
-    const [hasInteracted, setHasInteracted] = useState(false);
-
+export default function HomeClient() {
     return (
         <div className="flex flex-col items-center fade-in-up">
-            {/* ✦ Hero Section — collapses after first interaction */}
-            <section
-                className="w-full max-w-3xl text-center transition-all duration-700 ease-in-out overflow-hidden"
-                style={{
-                    paddingTop: hasInteracted ? '2rem' : '4rem',
-                    paddingBottom: hasInteracted ? '1rem' : '4rem',
-                    opacity: 1,
-                }}
-            >
-                {/* Decorative sparkles */}
-                {!hasInteracted && (
-                    <div className="flex justify-center gap-8 mb-6 transition-opacity duration-500">
-                        <span className="sparkle text-lg" style={{ animationDelay: '0s' }}>✦</span>
-                        <span className="sparkle text-sm" style={{ animationDelay: '0.5s' }}>✦</span>
-                        <span className="sparkle text-lg" style={{ animationDelay: '1s' }}>✦</span>
-                    </div>
-                )}
-
-                <h1
-                    className="font-semibold leading-tight transition-all duration-500"
-                    style={{
-                        fontFamily: "'Playfair Display', serif",
-                        color: 'var(--ink)',
-                        fontSize: hasInteracted ? '1.75rem' : undefined,
-                    }}
-                >
-                    {hasInteracted ? (
-                        "AI Platform"
-                    ) : (
-                        <>
-                            <em className="text-5xl md:text-6xl">Welcome to</em>
-                            <br />
-                            <span className="text-5xl md:text-6xl">AI Platform</span>
-                        </>
-                    )}
-                </h1>
-
-                {!hasInteracted && (
-                    <>
-                        <p
-                            className="text-base md:text-lg max-w-xl mx-auto mb-4 leading-relaxed mt-6"
-                            style={{ color: 'var(--text-secondary)', fontFamily: "'Inter', sans-serif" }}
-                        >
-                            A conversational publishing platform that transforms
-                            your voice into beautifully written articles.
-                        </p>
-
-                        <p
-                            className="text-sm mb-10 italic"
-                            style={{ color: 'var(--text-secondary)', fontFamily: "'Playfair Display', serif" }}
-                        >
-                            Speak your ideas. Let AI do the rest.
-                        </p>
-
-                        <div className="ink-divider max-w-xs mx-auto" />
-                    </>
-                )}
-            </section>
-
-            {/* ✦ Chat Section */}
-            <section className="w-full max-w-2xl mb-16">
-                {!hasInteracted && (
-                    <div className="text-center mb-6">
-                        <span className="sparkle text-sm mr-2">✦</span>
-                        <span
-                            className="text-sm uppercase tracking-widest"
-                            style={{ color: 'var(--text-secondary)', fontFamily: "'Inter', sans-serif", fontWeight: 500 }}
-                        >
-                            Ask me anything
-                        </span>
-                        <span className="sparkle text-sm ml-2">✦</span>
-                    </div>
-                )}
-                <ChatInterface onFirstMessage={() => setHasInteracted(true)} />
-            </section>
-
-            {/* ✦ Recent Posts Section */}
-            <section className="w-full max-w-3xl mb-16">
-                <div className="ink-divider mb-10" />
-
-                <div className="flex items-center justify-center gap-3 mb-8">
-                    <span className="sparkle text-sm">✦</span>
-                    <h2
-                        className="text-2xl md:text-3xl font-semibold"
-                        style={{ fontFamily: "'Playfair Display', serif", color: 'var(--ink)' }}
-                    >
-                        Recent Posts
-                    </h2>
-                    <span className="sparkle text-sm">✦</span>
-                </div>
-
-                {posts.length > 0 ? (
-                    <div className="grid gap-5">
-                        {posts.map((post) => (
-                            <Link
-                                key={post.slug}
-                                href={`/blog/${post.slug}`}
-                                className="ink-card block group"
-                            >
-                                <h3
-                                    className="text-lg font-semibold mb-1 group-hover:opacity-80 transition-opacity"
-                                    style={{ fontFamily: "'Playfair Display', serif", color: 'var(--ink)' }}
-                                >
-                                    {post.title}
-                                </h3>
-                                <p className="text-xs mb-2" style={{ color: 'var(--text-secondary)' }}>
-                                    {post.date}
-                                </p>
-                                <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                                    {post.excerpt}
-                                </p>
-                            </Link>
-                        ))}
-                    </div>
-                ) : (
-                    <div
-                        className="ink-card text-center py-12"
-                        style={{ borderStyle: 'dashed', color: 'var(--text-secondary)' }}
-                    >
-                        No posts yet — record your first idea
-                    </div>
-                )}
+            {/* ✦ Primary Chat Interface — conversation-first, full homepage */}
+            <section className="w-full max-w-4xl">
+                <ChatInterface />
             </section>
         </div>
     );
@@ -2101,11 +2279,12 @@ export default function HomeClient({ posts }: HomeClientProps) {
 "use client";
 
 import Link from "next/link";
-import { useSession } from "next-auth/react";
+import { useSession, signIn, signOut } from "next-auth/react";
 
 export default function NavBar() {
     const { data: session } = useSession();
-    const isAdmin = !!session?.user;
+    const isAdmin = session?.user?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL
+        || session?.user?.email === "admin@example.com";
 
     return (
         <nav className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -2117,7 +2296,7 @@ export default function NavBar() {
                 ✦ AI Platform ✦
             </Link>
             <div
-                className="flex gap-6 text-sm"
+                className="flex gap-6 items-center text-sm"
                 style={{ fontFamily: "'Inter', sans-serif" }}
             >
                 <Link
@@ -2135,6 +2314,23 @@ export default function NavBar() {
                     >
                         Studio
                     </Link>
+                )}
+                {session ? (
+                    <button
+                        onClick={() => signOut()}
+                        className="hover:opacity-70 transition-opacity text-xs"
+                        style={{ color: "var(--text-secondary)" }}
+                    >
+                        Sign out
+                    </button>
+                ) : (
+                    <button
+                        onClick={() => signIn("google")}
+                        className="pill-button-outline text-xs py-1.5 px-4"
+                        style={{ borderRadius: "999px" }}
+                    >
+                        Sign In
+                    </button>
                 )}
             </div>
         </nav>
@@ -2261,6 +2457,7 @@ export function getActivitiesByType(type: ActivityType): ActivityEntry[] {
 ### `src/lib/agent.ts`
 ```ts
 import { getSiteAnalytics } from "@/lib/mcp/get-site-analytics";
+import { searchBlogPosts, formatSearchResults } from "@/lib/mcp/search-blog-posts";
 import { getAllPosts } from "@/lib/posts";
 
 /**
@@ -2294,23 +2491,14 @@ export const toolRegistry: MCPTool[] = [
         },
     },
     {
-        name: "searchPosts",
-        description: "Searches blog posts by keyword in title or excerpt.",
+        name: "searchBlogPosts",
+        description: "Search blog posts for a keyword and return matching articles.",
         access: "public",
         async execute(params) {
-            const query = (params?.query as string || "").toLowerCase();
+            const query = (params?.query as string) || "";
             if (!query) return "Please provide a search term.";
-            const posts = getAllPosts();
-            const matches = posts.filter(
-                (p) =>
-                    p.title.toLowerCase().includes(query) ||
-                    p.excerpt.toLowerCase().includes(query)
-            );
-            if (matches.length === 0) return `No posts found matching "${query}".`;
-            const list = matches
-                .map((p, i) => `${i + 1}. ${p.title} (${p.date})`)
-                .join("\n");
-            return `Found ${matches.length} post(s):\n${list}`;
+            const results = await searchBlogPosts(query);
+            return formatSearchResults(query, results);
         },
     },
     {
@@ -2374,7 +2562,9 @@ export async function agentProcess(
         const keywords = getToolKeywords(tool.name);
         if (keywords.some((kw) => lower.includes(kw))) {
             try {
-                return await tool.execute();
+                // Extract query from the message for search tools
+                const params = extractParams(lower, tool.name);
+                return await tool.execute(params);
             } catch (error) {
                 return `Error executing ${tool.name}: ${error}`;
             }
@@ -2392,12 +2582,33 @@ export async function agentProcess(
 function getToolKeywords(toolName: string): string[] {
     const keywordMap: Record<string, string[]> = {
         listRecentPosts: ["recent posts", "latest posts", "show posts", "list posts"],
-        searchPosts: ["search", "find posts", "posts about"],
+        searchBlogPosts: ["search", "find posts", "posts about", "search blog", "search posts"],
         getPostSummary: ["post summary", "how many posts", "blog summary"],
         getSiteAnalytics: ["analytics", "visitors", "traffic", "how many people", "page views"],
         getSystemStatus: ["system status", "health", "system check", "platform status"],
     };
     return keywordMap[toolName] || [];
+}
+
+/**
+ * Extract parameters from user message for tool execution.
+ */
+function extractParams(message: string, toolName: string): Record<string, unknown> {
+    if (toolName === "searchBlogPosts") {
+        // Extract the search query from patterns like "find posts about X" or "search X"
+        const patterns = [
+            /posts about (.+)/i,
+            /search (?:for |blog )?(.+)/i,
+            /find (?:posts )?(?:about )?(.+)/i,
+        ];
+        for (const pattern of patterns) {
+            const match = message.match(pattern);
+            if (match) return { query: match[1].trim() };
+        }
+        // Fallback: use the whole message as query
+        return { query: message };
+    }
+    return {};
 }
 
 async function llmAgentProcess(message: string, tools: MCPTool[]): Promise<string> {
@@ -2447,32 +2658,16 @@ async function llmAgentProcess(message: string, tools: MCPTool[]): Promise<strin
 ### `src/lib/auth.ts`
 ```ts
 import NextAuth from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
+import Google from "next-auth/providers/google";
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@example.com";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
     providers: [
-        CredentialsProvider({
-            name: "Admin Login",
-            credentials: {
-                email: { label: "Email", type: "email" },
-                password: { label: "Password", type: "password" },
-            },
-            async authorize(credentials) {
-                if (
-                    credentials?.email === ADMIN_EMAIL &&
-                    credentials?.password === ADMIN_PASSWORD
-                ) {
-                    return {
-                        id: "1",
-                        name: "Admin",
-                        email: ADMIN_EMAIL,
-                    };
-                }
-                return null;
-            },
+        // Pure Google OAuth
+        Google({
+            clientId: process.env.GOOGLE_CLIENT_ID || "",
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
         }),
     ],
     pages: {
@@ -2482,6 +2677,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         strategy: "jwt",
     },
 });
+
+/**
+ * Check if the current session user is the admin.
+ */
+export function isAdmin(email: string | null | undefined): boolean {
+    if (!email) return false;
+    return email === ADMIN_EMAIL;
+}
 ```
 
 ---
@@ -2658,6 +2861,67 @@ export async function getSiteAnalytics(): Promise<SiteAnalytics> {
         mostPopularPosts: simulatedPosts,
         lastUpdated: new Date().toISOString(),
     };
+}
+```
+
+---
+
+### `src/lib/mcp/search-blog-posts.ts`
+```ts
+/**
+ * MCP Tool: searchBlogPosts
+ *
+ * Searches blog posts by keyword in title and content.
+ * Returns a list of matching post slugs and titles.
+ *
+ * MCP Tool Definition:
+ * {
+ *   "name": "searchBlogPosts",
+ *   "description": "Search blog posts for a keyword and return matching articles.",
+ *   "parameters": { "query": "string" }
+ * }
+ */
+
+import { getAllPosts } from "@/lib/posts";
+
+export interface SearchResult {
+    slug: string;
+    title: string;
+    date: string;
+    excerpt: string;
+}
+
+/**
+ * Search all blog posts for a keyword.
+ * Matches against title, excerpt, and content (case-insensitive).
+ */
+export async function searchBlogPosts(query: string): Promise<SearchResult[]> {
+    if (!query || query.trim().length === 0) return [];
+
+    const lower = query.toLowerCase().trim();
+    const posts = getAllPosts();
+
+    return posts.filter((post) => {
+        const titleMatch = post.title.toLowerCase().includes(lower);
+        const excerptMatch = post.excerpt.toLowerCase().includes(lower);
+        const contentMatch = post.content?.toLowerCase().includes(lower) ?? false;
+        return titleMatch || excerptMatch || contentMatch;
+    });
+}
+
+/**
+ * Format search results as a readable string for chat display.
+ */
+export function formatSearchResults(query: string, results: SearchResult[]): string {
+    if (results.length === 0) {
+        return `No posts found matching "${query}". Try a different search term.`;
+    }
+
+    const list = results
+        .map((r, i) => `${i + 1}. **${r.title}** (${r.date})\n   ${r.excerpt}`)
+        .join("\n\n");
+
+    return `Found ${results.length} post(s) matching "${query}":\n\n${list}`;
 }
 ```
 
