@@ -1,10 +1,9 @@
 /**
- * Sprint 13 Tests — Hero Chat Integration
+ * Sprint 13 Tests — Hero Chat Integration (updated for Sprint 25 layout)
  */
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import HomeClient from "@/components/HomeClient";
 
-// Mock fetch for chat API
 global.fetch = jest.fn(() =>
     Promise.resolve({
         json: () => Promise.resolve({ reply: "Hello! I'm your assistant." }),
@@ -12,12 +11,7 @@ global.fetch = jest.fn(() =>
 ) as jest.Mock;
 
 const mockPosts = [
-    {
-        slug: "test-post",
-        title: "Test Post",
-        date: "2026-03-06",
-        excerpt: "A test post excerpt.",
-    },
+    { slug: "test-post", title: "Test Post", date: "2026-03-06", excerpt: "A test post." },
 ];
 
 describe("Sprint 13 — Hero Chat Integration", () => {
@@ -30,9 +24,9 @@ describe("Sprint 13 — Hero Chat Integration", () => {
         expect(screen.getByPlaceholderText(/What would you like to explore/i)).toBeTruthy();
     });
 
-    it("displays a greeting message on load", () => {
+    it("displays a welcome message inside the chat on load", () => {
         render(<HomeClient posts={mockPosts} />);
-        expect(screen.getByText(/Hello.*AI publishing assistant/i)).toBeTruthy();
+        expect(screen.getByText(/Welcome to AI Platform/i)).toBeTruthy();
     });
 
     it("has a chat input that accepts text", () => {
@@ -61,8 +55,8 @@ describe("Sprint 13 — Hero Chat Integration", () => {
         expect(screen.getByText("Test Post")).toBeTruthy();
     });
 
-    it("shows welcome hero text before interaction", () => {
+    it("shows welcome text on load", () => {
         render(<HomeClient posts={mockPosts} />);
-        expect(screen.getByText(/Welcome to/i)).toBeTruthy();
+        expect(screen.getByText(/Welcome to AI Platform/i)).toBeTruthy();
     });
 });

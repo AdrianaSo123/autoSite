@@ -1,5 +1,5 @@
 /**
- * Sprint 24 Tests — UX Refinement
+ * Sprint 24 Tests — UX Refinement (updated for Sprint 25 layout)
  */
 import { render, screen } from "@testing-library/react";
 import HomeClient from "@/components/HomeClient";

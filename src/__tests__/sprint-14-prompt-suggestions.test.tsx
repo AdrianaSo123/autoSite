@@ -1,10 +1,9 @@
 /**
- * Sprint 14 Tests — Chat Prompt Suggestions
+ * Sprint 14 Tests — Chat Prompt Suggestions (updated for Sprint 25 layout)
  */
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import HomeClient from "@/components/HomeClient";
 
-// Mock fetch
 global.fetch = jest.fn(() =>
     Promise.resolve({
         json: () => Promise.resolve({ reply: "Here are recent posts..." }),
@@ -23,16 +22,17 @@ describe("Sprint 14 — Chat Prompt Suggestions", () => {
     it("displays suggestion buttons", () => {
         render(<HomeClient posts={mockPosts} />);
         expect(screen.getByText("Show recent posts")).toBeTruthy();
-        expect(screen.getByText("What is this?")).toBeTruthy();
+        expect(screen.getByText("What is this project?")).toBeTruthy();
         expect(screen.getByText("Help")).toBeTruthy();
     });
 
-    it("sets input text when clicking a prompt suggestion", () => {
+    it("sends message directly when clicking a prompt suggestion", async () => {
         render(<HomeClient posts={mockPosts} />);
         const button = screen.getByText("Show recent posts");
         fireEvent.click(button);
 
-        const input = screen.getByPlaceholderText(/What would you like to explore/i);
-        expect(input).toHaveValue("Show recent posts");
+        await waitFor(() => {
+            expect(global.fetch).toHaveBeenCalledWith("/api/chat", expect.any(Object));
+        });
     });
 });
