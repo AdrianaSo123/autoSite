@@ -99,16 +99,14 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
 
     return (
         <div
-            className="w-full rounded-2xl overflow-hidden flex flex-col"
+            className="w-full flex-1 flex flex-col relative"
             style={{
-                border: "1.5px solid var(--ink-border)",
-                background: "var(--cream-light)",
                 minHeight: "85vh",
             }}
             data-testid="chat-container"
         >
             {/* Messages area — grows to fill */}
-            <div className="flex-1 overflow-y-auto p-5 space-y-3">
+            <div className="flex-1 overflow-y-auto px-2 md:px-8 pb-32 space-y-6">
                 {/* ✦ Hero welcome — shown only when no conversation */}
                 {isEmpty && (
                     <div className="flex flex-col items-center justify-center h-full text-center py-16">
@@ -119,14 +117,14 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
                         </div>
 
                         <h2
-                            className="text-3xl md:text-4xl font-semibold mb-4"
+                            className="text-4xl md:text-5xl font-semibold mb-6"
                             style={{ fontFamily: "'Playfair Display', serif", color: "var(--ink)" }}
                         >
                             Welcome to AI Platform
                         </h2>
 
                         <p
-                            className="text-base max-w-md mx-auto mb-2 leading-relaxed"
+                            className="text-lg md:text-xl max-w-2xl mx-auto mb-4 leading-relaxed"
                             style={{ color: "var(--text-secondary)", fontFamily: "'Inter', sans-serif" }}
                         >
                             A conversational publishing platform that transforms
@@ -163,10 +161,12 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
                         className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                     >
                         <div
-                            className="max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed"
+                            className={`max-w-[85%] md:max-w-[75%] rounded-2xl px-5 py-4 text-base leading-relaxed ${msg.role === "user" ? "rounded-br-sm" : "rounded-bl-sm"
+                                }`}
                             style={{
-                                background: msg.role === "user" ? "var(--ink)" : "var(--ink-faint)",
+                                background: msg.role === "user" ? "var(--ink)" : "var(--cream-light)",
                                 color: msg.role === "user" ? "var(--cream)" : "var(--ink)",
+                                border: msg.role === "assistant" ? "1px solid var(--ink-border)" : "none",
                                 fontFamily: "'Inter', sans-serif",
                             }}
                         >
@@ -177,9 +177,10 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
                 {isLoading && (
                     <div className="flex justify-start">
                         <div
-                            className="rounded-2xl px-4 py-2.5 text-sm"
+                            className="rounded-2xl rounded-bl-sm px-5 py-4 text-base"
                             style={{
-                                background: "var(--ink-faint)",
+                                background: "var(--cream-light)",
+                                border: "1px solid var(--ink-border)",
                                 color: "var(--text-secondary)",
                                 fontFamily: "'Inter', sans-serif",
                             }}
@@ -191,47 +192,53 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
                 <div ref={messagesEndRef} />
             </div>
 
-            {/* Prompt suggestions — shown below messages when conversation has started */}
-            {!isEmpty && (
-                <div
-                    className="px-5 py-3 flex gap-2 flex-wrap"
-                    style={{ borderTop: "1px solid var(--ink-faint)" }}
-                >
-                    {SUGGESTIONS.map((prompt) => (
-                        <button
-                            key={prompt}
-                            onClick={() => sendMessage(prompt)}
-                            className="pill-button-outline text-xs py-1.5 px-3"
-                            style={{ borderRadius: "999px", fontSize: "0.7rem" }}
-                        >
-                            {prompt}
-                        </button>
-                    ))}
-                </div>
-            )}
-
             {/* Input area */}
-            <div
-                className="p-4 flex gap-3"
-                style={{ borderTop: "1px solid var(--ink-border)" }}
-            >
-                <input
-                    type="text"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder="What would you like to explore?"
-                    className="pill flex-1 text-sm"
-                    style={{ fontFamily: "'Inter', sans-serif" }}
-                    disabled={isLoading}
-                />
-                <button
-                    onClick={() => sendMessage()}
-                    disabled={isLoading || !input.trim()}
-                    className="pill-button text-sm disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                    Send
-                </button>
+            <div className="absolute bottom-4 left-0 right-0 px-4 md:px-8 pointer-events-none">
+                <div className="max-w-4xl mx-auto flex flex-col gap-2 pointer-events-auto">
+                    {/* Prompt suggestions — shown directly above input when conversation has started */}
+                    {!isEmpty && (
+                        <div className="flex gap-2 flex-wrap mb-1">
+                            {SUGGESTIONS.map((prompt) => (
+                                <button
+                                    key={prompt}
+                                    onClick={() => sendMessage(prompt)}
+                                    className="pill-button-outline text-xs py-1.5 px-3 bg-white"
+                                    style={{ borderRadius: "999px", fontSize: "0.75rem", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}
+                                >
+                                    {prompt}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+
+                    <div
+                        className="p-2 pl-4 flex gap-3 shadow-lg rounded-full"
+                        style={{
+                            background: "var(--cream-light)",
+                            border: "1px solid var(--ink-border)",
+                            boxShadow: "0 8px 24px rgba(0,0,0,0.06)"
+                        }}
+                    >
+                        <input
+                            type="text"
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            placeholder="What would you like to explore?"
+                            className="flex-1 text-base outline-none bg-transparent"
+                            style={{ fontFamily: "'Inter', sans-serif" }}
+                            disabled={isLoading}
+                        />
+                        <button
+                            onClick={() => sendMessage()}
+                            disabled={isLoading || !input.trim()}
+                            className="pill-button text-sm px-6 disabled:opacity-40 disabled:cursor-not-allowed"
+                            style={{ borderRadius: "999px" }}
+                        >
+                            Send
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     );

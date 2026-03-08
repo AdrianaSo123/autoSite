@@ -21,7 +21,7 @@ export default function RootLayout({
             <header className="border-b" style={{ borderColor: 'var(--ink-border)' }}>
               <NavBar />
             </header>
-            <main className="flex-1 max-w-5xl mx-auto px-6 py-8 w-full">
+            <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-8 py-8 w-full">
               {children}
             </main>
           </div>

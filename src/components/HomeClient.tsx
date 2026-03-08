@@ -4,9 +4,9 @@ import ChatInterface from "@/components/ChatInterface";
 
 export default function HomeClient() {
     return (
-        <div className="flex flex-col items-center fade-in-up">
+        <div className="flex flex-col flex-1 items-center fade-in-up w-full h-full">
             {/* ✦ Primary Chat Interface — conversation-first, full homepage */}
-            <section className="w-full max-w-4xl">
+            <section className="w-full flex-1 max-w-5xl flex flex-col">
                 <ChatInterface />
             </section>
         </div>
