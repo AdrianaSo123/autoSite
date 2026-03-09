@@ -18,6 +18,8 @@ interface UseChatOptions {
     welcomeMessage?: string;
     /** Callback fired on the first user message */
     onFirstMessage?: () => void;
+    /** Callback fired when the API returns an actionable command */
+    onAction?: (action: string) => void;
 }
 
 interface ChatResponse {
@@ -42,7 +44,7 @@ interface UseChatReturn {
 // ---------------------------------------------------------------------------
 
 export function useChat(options: UseChatOptions = {}): UseChatReturn {
-    const { welcomeMessage, onFirstMessage } = options;
+    const { welcomeMessage, onFirstMessage, onAction } = options;
 
     const initialMessages: ChatMessage[] = welcomeMessage
         ? [{ id: "welcome", role: "assistant", content: welcomeMessage, timestamp: new Date() }]
@@ -93,6 +95,10 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
                     },
                 ]);
 
+                if (data.action && onAction) {
+                    onAction(data.action);
+                }
+
                 return data as ChatResponse;
             } catch {
                 setMessages((prev) => [
@@ -108,7 +114,7 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
                 setIsLoading(false);
             }
         },
-        [input, isLoading, hasNotified, onFirstMessage]
+        [input, isLoading, hasNotified, onFirstMessage, onAction]
     );
 
     const handleKeyDown = useCallback(

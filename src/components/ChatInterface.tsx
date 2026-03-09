@@ -77,18 +77,22 @@ interface ChatInterfaceProps {
 }
 
 export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {}) {
-    const { messages, input, isLoading, loadingText, isEmpty, setInput, sendMessage, handleKeyDown, messagesEndRef } =
-        useChat({ onFirstMessage });
     const router = useRouter();
+    const { messages, input, isLoading, loadingText, isEmpty, setInput, sendMessage, handleKeyDown, messagesEndRef } =
+        useChat({
+            onFirstMessage,
+            onAction: (action) => {
+                if (action === "open_admin_studio") {
+                    setTimeout(() => router.push("/studio"), 800);
+                } else if (action.startsWith("open_post:")) {
+                    const targetUrl = action.substring("open_post:".length);
+                    setTimeout(() => router.push(targetUrl), 800);
+                }
+            }
+        });
 
-    const handleSend = async (text?: string) => {
-        const data = await sendMessage(text);
-        if (data?.action === "open_admin_studio") {
-            setTimeout(() => router.push("/studio"), 800);
-        } else if (data?.action?.startsWith("open_post:")) {
-            const targetUrl = data.action.substring("open_post:".length);
-            setTimeout(() => router.push(targetUrl), 800);
-        }
+    const handleSend = (text?: string) => {
+        sendMessage(text);
     };
 
     return (
