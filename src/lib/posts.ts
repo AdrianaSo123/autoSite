@@ -28,7 +28,7 @@ function parsePostFile(slug: string, raw: string): Post {
     return {
         slug,
         title: data.title || slug,
-        date: data.date || "",
+        date: data.date instanceof Date ? data.date.toISOString().split('T')[0] : (data.date || ""),
         excerpt: data.excerpt || "",
         content,
     };
