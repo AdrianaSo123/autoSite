@@ -32,13 +32,13 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     const htmlContent = await getPostHtml(post.content);
 
     return (
-        <div className="max-w-3xl mx-auto fade-in-up">
+        <div className="max-w-3xl mx-auto fade-in-up relative">
             <Link
-                href="/blog"
-                className="text-sm mb-8 inline-block hover:opacity-70 transition-opacity"
-                style={{ color: 'var(--ink)', fontFamily: "'Playfair Display', serif", fontStyle: 'italic' }}
+                href="/"
+                className="text-sm mb-8 inline-flex items-center gap-2 hover:opacity-70 transition-opacity bg-[var(--cream-light)] px-4 py-2 rounded-full border border-[var(--ink-border)] shadow-sm"
+                style={{ color: 'var(--ink)', fontFamily: "'Inter', sans-serif", fontWeight: 500 }}
             >
-                ← Back to Blog
+                <span className="font-serif italic text-lg leading-none mt-[-2px]">←</span> Back to AI Chat
             </Link>
             <article>
                 <div className="flex items-center gap-2 mb-2">

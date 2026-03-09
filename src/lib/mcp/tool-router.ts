@@ -103,7 +103,7 @@ async function llmToolSelection(message: string, tools: MCPTool[]): Promise<stri
                 messages: [
                     {
                         role: "system",
-                        content: `You are an AI assistant for a publishing platform. You have access to these tools:\n\n${toolDescriptions}\n\nBased on the user's message, respond with ONLY the tool name to call, or "none" if no tool is needed.`,
+                        content: `You are an AI assistant for a publishing platform. You have access to these tools:\n\n${toolDescriptions}\n\nBased on the user's message, respond with ONLY the tool name to call. If the request is a casual greeting, or completely unrelated to publishing and these tools, return "out_of_scope".`,
                     },
                     { role: "user", content: message },
                 ],
@@ -116,16 +116,21 @@ async function llmToolSelection(message: string, tools: MCPTool[]): Promise<stri
         const data = await response.json();
         const toolChoice = data.choices[0]?.message?.content?.trim();
 
-        if (toolChoice && toolChoice !== "none") {
+        if (toolChoice && toolChoice !== "out_of_scope" && toolChoice !== "none") {
             const tool = tools.find((t) => t.name === toolChoice);
             if (tool) {
                 return tool.execute(extractParams(message.toLowerCase(), tool.name));
             }
         }
+
+        // If we reach here, the LLM determined it's off-topic or no tool matched.
+        return "I'm a dedicated publishing assistant, so I don't know much about that! But I can help you **Show recent posts**, **Search posts**, or **Publish a draft**.";
+
     } catch (error) {
         console.error("LLM tool selection error:", error);
-        return "⚠️ I had trouble processing that request. Please try again.";
+        return "⚠️ I had trouble processing that request. Please try your search again.";
     }
 
+    // Default fallback (though the catch or out_of_scope block usually returns first)
     return "";
 }

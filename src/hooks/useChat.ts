@@ -29,6 +29,7 @@ interface UseChatReturn {
     messages: ChatMessage[];
     input: string;
     isLoading: boolean;
+    loadingText: string;
     isEmpty: boolean;
     setInput: (value: string) => void;
     sendMessage: (text?: string) => Promise<ChatResponse | undefined>;
@@ -120,10 +121,37 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
         [sendMessage]
     );
 
+    const [loadingText, setLoadingText] = useState("✦ Thinking...");
+
+    // Cycle loading text when active
+    useEffect(() => {
+        if (!isLoading) {
+            setLoadingText("✦ Thinking...");
+            return;
+        }
+
+        const phrases = [
+            "✦ Thinking...",
+            "✦ Connecting...",
+            "✦ Analyzing context...",
+            "✦ Drafting response...",
+            "✦ Securing publishing studio...",
+        ];
+
+        let i = 0;
+        const interval = setInterval(() => {
+            i = (i + 1) % phrases.length;
+            setLoadingText(phrases[i]);
+        }, 3000);
+
+        return () => clearInterval(interval);
+    }, [isLoading]);
+
     return {
         messages,
         input,
         isLoading,
+        loadingText,
         isEmpty: messages.length === 0,
         setInput,
         sendMessage,
