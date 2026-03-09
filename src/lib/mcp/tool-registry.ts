@@ -7,6 +7,7 @@
 
 import { getAllPosts } from "@/lib/posts";
 import { searchBlogPosts, formatSearchResults } from "@/lib/mcp/search-blog-posts";
+import { sessionState } from "@/lib/mcp/session";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -51,11 +52,19 @@ export const toolRegistry: MCPTool[] = [
             safeExecute(async () => {
                 const posts = getAllPosts();
                 if (posts.length === 0) return "No blog posts yet.";
-                const list = posts
-                    .slice(0, 5)
-                    .map((p, i) => `${i + 1}. **[${p.title}](/blog/${p.slug})** (${p.date})`)
-                    .join("\n");
-                return `📝 **Recent Posts**\n\n${list}`;
+                const topPosts = posts.slice(0, 5);
+
+                // Store results in session for conversational navigation (open 1, open 2)
+                sessionState.lastPostResults = topPosts.map((p) => ({
+                    title: p.title,
+                    slug: p.slug,
+                    date: p.date,
+                }));
+
+                const list = topPosts
+                    .map((p, i) => `${i + 1}. ${p.title}\n   /blog/${p.slug} (${p.date})`)
+                    .join("\n\n");
+                return `📝 Recent Posts\n\n${list}`;
             }, "listRecentPosts"),
     },
     {

@@ -13,6 +13,7 @@
  */
 
 import { getAllPosts } from "@/lib/posts";
+import { sessionState } from "@/lib/mcp/session";
 
 export interface SearchResult {
     slug: string;
@@ -78,9 +79,18 @@ export function formatSearchResults(query: string, results: SearchResult[]): str
         return `No posts found matching "${query}". Try a different search term.`;
     }
 
-    const list = results
-        .map((r, i) => `${i + 1}. **[${r.title}](/blog/${r.slug})** (${r.date})\n   ${r.excerpt}`)
+    const topResults = results.slice(0, 5);
+
+    // Store results in session for conversational navigation
+    sessionState.lastPostResults = topResults.map((p) => ({
+        title: p.title,
+        slug: p.slug,
+        date: p.date,
+    }));
+
+    const list = topResults
+        .map((r, i) => `${i + 1}. ${r.title}\n   /blog/${r.slug} (${r.date})`)
         .join("\n\n");
 
-    return `🔍 Found ${results.length} post(s) matching "${query}":\n\n${list}`;
+    return `🔍 Found ${topResults.length} post(s) matching "${query}":\n\n${list}`;
 }

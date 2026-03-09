@@ -6,6 +6,8 @@
  * MCP tool router — this module only handles conversational and action intents.
  */
 
+import { sessionState } from "@/lib/mcp/session";
+
 export interface CommandResult {
     reply: string;
     action?: string;
@@ -39,13 +41,21 @@ export async function routeCommand(message: string): Promise<CommandResult> {
     }
 
     // Open post by number
-    const openMatch = lower.match(/^open\s+(\d+)$/);
+    const openMatch = lower.match(/^open\s+(?:post\s+)?(\d+)$/);
     if (openMatch) {
         const index = parseInt(openMatch[1], 10);
-        return {
-            reply: `Opening post #${index}...`,
-            action: `open_post:${index}`,
-        };
+        const post = sessionState.lastPostResults[index - 1];
+
+        if (post) {
+            return {
+                reply: `Opening: ${post.title}\n/blog/${post.slug}`,
+                action: `open_post:/blog/${post.slug}`,
+            };
+        } else {
+            return {
+                reply: `I couldn't find that post number. Try "show recent posts".`,
+            };
+        }
     }
 
     // Help
@@ -64,6 +74,6 @@ export async function routeCommand(message: string): Promise<CommandResult> {
 
     // Default
     return {
-        reply: `I'm not sure how to handle that yet. Try saying **"help"** to see available commands.`,
+        reply: `I'm not quite sure how to handle a command like that yet. But I'm great at these things:\n\n• **Show recent posts**\n• **Search posts**\n• **Publish draft**\n\nWhat would you like to explore?`,
     };
 }

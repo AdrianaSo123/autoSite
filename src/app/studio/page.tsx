@@ -1,4 +1,4 @@
-import { auth, isAdmin } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import AdminChat from "@/components/AdminChat";
 import ActivityDashboard from "@/components/ActivityDashboard";
@@ -10,30 +10,9 @@ export const metadata = {
 export default async function StudioPage() {
     const session = await auth();
 
-    // Unauthenticated → redirect to sign-in
-    if (!session) {
+    // Unauthenticated or not admin → redirect to sign-in
+    if (!session || !session.user?.isAdmin) {
         redirect("/admin/login");
-    }
-
-    // Authenticated but not admin → restricted access
-    if (!isAdmin(session.user?.email)) {
-        return (
-            <div className="max-w-3xl mx-auto text-center py-20 fade-in-up">
-                <span className="sparkle text-2xl">✦</span>
-                <h1
-                    className="text-3xl font-semibold mt-4 mb-4"
-                    style={{ fontFamily: "'Playfair Display', serif", color: "var(--ink)" }}
-                >
-                    Studio Access Restricted
-                </h1>
-                <p
-                    className="text-sm"
-                    style={{ color: "var(--text-secondary)", fontFamily: "'Inter', sans-serif" }}
-                >
-                    This area is only available to the site administrator.
-                </p>
-            </div>
-        );
     }
 
     // Admin → render full studio

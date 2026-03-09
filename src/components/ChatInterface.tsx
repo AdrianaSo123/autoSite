@@ -77,7 +77,7 @@ interface ChatInterfaceProps {
 }
 
 export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {}) {
-    const { messages, input, isLoading, isEmpty, setInput, sendMessage, handleKeyDown, messagesEndRef } =
+    const { messages, input, isLoading, loadingText, isEmpty, setInput, sendMessage, handleKeyDown, messagesEndRef } =
         useChat({ onFirstMessage });
     const router = useRouter();
 
@@ -86,21 +86,8 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
         if (data?.action === "open_admin_studio") {
             setTimeout(() => router.push("/studio"), 800);
         } else if (data?.action?.startsWith("open_post:")) {
-            const indexStr = data.action.split(":")[1];
-            const index = parseInt(indexStr, 10);
-
-            // Wait for the DOM to update with the "Opening post..." message,
-            // then scan the entire chat history for rendered markdown links
-            setTimeout(() => {
-                const chatContainer = document.querySelector('[data-testid="chat-container"]');
-                if (chatContainer) {
-                    const links = chatContainer.querySelectorAll('a[href^="/blog/"]');
-                    if (index > 0 && index <= links.length) {
-                        const targetUrl = links[index - 1].getAttribute("href");
-                        if (targetUrl) router.push(targetUrl);
-                    }
-                }
-            }, 800);
+            const targetUrl = data.action.substring("open_post:".length);
+            setTimeout(() => router.push(targetUrl), 800);
         }
     };
 
@@ -187,9 +174,10 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
                                 border: "1px solid var(--ink-border)",
                                 color: "var(--text-secondary)",
                                 fontFamily: "'Inter', sans-serif",
+                                minWidth: "160px"
                             }}
                         >
-                            ✦ Thinking...
+                            <span className="fade-in">{loadingText}</span>
                         </div>
                     </div>
                 )}
