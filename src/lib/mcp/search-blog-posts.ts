@@ -79,7 +79,7 @@ export function formatSearchResults(query: string, results: SearchResult[]): str
     }
 
     const list = results
-        .map((r, i) => `${i + 1}. **${r.title}** (${r.date})\n   ${r.excerpt}`)
+        .map((r, i) => `${i + 1}. **[${r.title}](/blog/${r.slug})** (${r.date})\n   ${r.excerpt}`)
         .join("\n\n");
 
     return `🔍 Found ${results.length} post(s) matching "${query}":\n\n${list}`;

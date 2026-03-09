@@ -38,6 +38,16 @@ export async function routeCommand(message: string): Promise<CommandResult> {
         };
     }
 
+    // Open post by number
+    const openMatch = lower.match(/^open\s+(\d+)$/);
+    if (openMatch) {
+        const index = parseInt(openMatch[1], 10);
+        return {
+            reply: `Opening post #${index}...`,
+            action: `open_post:${index}`,
+        };
+    }
+
     // Help
     if (lower.includes("what is this") || lower.includes("about this") || lower.includes("help")) {
         return {

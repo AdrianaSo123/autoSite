@@ -53,7 +53,7 @@ export const toolRegistry: MCPTool[] = [
                 if (posts.length === 0) return "No blog posts yet.";
                 const list = posts
                     .slice(0, 5)
-                    .map((p, i) => `${i + 1}. **${p.title}** (${p.date})`)
+                    .map((p, i) => `${i + 1}. **[${p.title}](/blog/${p.slug})** (${p.date})`)
                     .join("\n");
                 return `📝 **Recent Posts**\n\n${list}`;
             }, "listRecentPosts"),

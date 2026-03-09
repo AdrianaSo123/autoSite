@@ -11,11 +11,50 @@ import { useChat } from "@/hooks/useChat";
 function renderMarkdown(text: string): React.ReactNode {
     const lines = text.split("\n");
     return lines.map((line, i) => {
+        // Split by bold chunks
         const parts = line.split(/(\*\*[^*]+\*\*)/g);
         const rendered = parts.map((part, j) => {
             if (part.startsWith("**") && part.endsWith("**")) {
-                return <strong key={j}>{part.slice(2, -2)}</strong>;
+                const inner = part.slice(2, -2);
+                // Check if the bold text contains a link
+                const linkMatch = inner.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+                if (linkMatch) {
+                    return (
+                        <strong key={j} className="font-semibold">
+                            <a
+                                href={linkMatch[2]}
+                                className="underline underline-offset-4 hover:opacity-70 transition-opacity"
+                                style={{ color: "var(--ink)" }}
+                            >
+                                {linkMatch[1]}
+                            </a>
+                        </strong>
+                    );
+                }
+                return <strong key={j} className="font-semibold">{inner}</strong>;
             }
+
+            // Also handle standard non-bold links embedded in the line
+            if (part.includes("[") && part.includes("](")) {
+                const linkParts = part.split(/(\[[^\]]+\]\([^)]+\))/g);
+                return linkParts.map((subPart, k) => {
+                    const match = subPart.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+                    if (match) {
+                        return (
+                            <a
+                                key={`${j}-${k}`}
+                                href={match[2]}
+                                className="underline underline-offset-4 hover:opacity-70 transition-opacity"
+                                style={{ color: "var(--ink)" }}
+                            >
+                                {match[1]}
+                            </a>
+                        );
+                    }
+                    return subPart;
+                });
+            }
+
             return part;
         });
         return (
@@ -46,6 +85,22 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
         const data = await sendMessage(text);
         if (data?.action === "open_admin_studio") {
             setTimeout(() => router.push("/studio"), 800);
+        } else if (data?.action?.startsWith("open_post:")) {
+            const indexStr = data.action.split(":")[1];
+            const index = parseInt(indexStr, 10);
+
+            // Wait for the DOM to update with the "Opening post..." message,
+            // then scan the entire chat history for rendered markdown links
+            setTimeout(() => {
+                const chatContainer = document.querySelector('[data-testid="chat-container"]');
+                if (chatContainer) {
+                    const links = chatContainer.querySelectorAll('a[href^="/blog/"]');
+                    if (index > 0 && index <= links.length) {
+                        const targetUrl = links[index - 1].getAttribute("href");
+                        if (targetUrl) router.push(targetUrl);
+                    }
+                }
+            }, 800);
         }
     };
 
