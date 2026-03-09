@@ -2,7 +2,7 @@
  * MCP Tool: searchBlogPosts
  *
  * Searches blog posts by keyword in title and content.
- * Returns a list of matching post slugs and titles.
+ * Returns a ranked list of matching post slugs and titles.
  *
  * MCP Tool Definition:
  * {
@@ -19,24 +19,55 @@ export interface SearchResult {
     title: string;
     date: string;
     excerpt: string;
+    score: number;
 }
 
 /**
- * Search all blog posts for a keyword.
+ * Search all blog posts for a keyword with relevance ranking.
  * Matches against title, excerpt, and content (case-insensitive).
+ * Supports partial word matching and ranks by match quality.
  */
 export async function searchBlogPosts(query: string): Promise<SearchResult[]> {
     if (!query || query.trim().length === 0) return [];
 
-    const lower = query.toLowerCase().trim();
+    const terms = query.toLowerCase().trim().split(/\s+/);
     const posts = getAllPosts();
 
-    return posts.filter((post) => {
-        const titleMatch = post.title.toLowerCase().includes(lower);
-        const excerptMatch = post.excerpt.toLowerCase().includes(lower);
-        const contentMatch = post.content?.toLowerCase().includes(lower) ?? false;
-        return titleMatch || excerptMatch || contentMatch;
-    });
+    const scored: SearchResult[] = [];
+
+    for (const post of posts) {
+        let score = 0;
+        const titleLower = post.title.toLowerCase();
+        const excerptLower = post.excerpt.toLowerCase();
+        const contentLower = post.content?.toLowerCase() ?? "";
+
+        for (const term of terms) {
+            // Title match (highest weight)
+            if (titleLower.includes(term)) score += 10;
+            // Excerpt match (medium weight)
+            if (excerptLower.includes(term)) score += 5;
+            // Content match (lower weight)
+            if (contentLower.includes(term)) score += 2;
+        }
+
+        // Exact phrase match bonus
+        const fullQuery = query.toLowerCase().trim();
+        if (titleLower.includes(fullQuery)) score += 15;
+        if (excerptLower.includes(fullQuery)) score += 8;
+
+        if (score > 0) {
+            scored.push({
+                slug: post.slug,
+                title: post.title,
+                date: post.date,
+                excerpt: post.excerpt,
+                score,
+            });
+        }
+    }
+
+    // Sort by relevance score (descending)
+    return scored.sort((a, b) => b.score - a.score);
 }
 
 /**
@@ -51,5 +82,5 @@ export function formatSearchResults(query: string, results: SearchResult[]): str
         .map((r, i) => `${i + 1}. **${r.title}** (${r.date})\n   ${r.excerpt}`)
         .join("\n\n");
 
-    return `Found ${results.length} post(s) matching "${query}":\n\n${list}`;
+    return `🔍 Found ${results.length} post(s) matching "${query}":\n\n${list}`;
 }

@@ -52,7 +52,7 @@ describe("Sprint 20 — Activity Log System", () => {
     });
 
     it("creates entries for MCP tool executed", () => {
-        logActivity("mcp_tool_executed", { toolName: "getSiteAnalytics" });
+        logActivity("mcp_tool_executed", { toolName: "searchBlogPosts" });
         const written = JSON.parse(mockData);
         expect(written[0].type).toBe("mcp_tool_executed");
     });

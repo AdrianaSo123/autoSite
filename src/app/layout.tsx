@@ -4,7 +4,6 @@ import Providers from "@/components/Providers";
 import "./globals.css";
 import { Analytics } from '@vercel/analytics/react';
 
-
 export const metadata: Metadata = {
   title: "AI Publishing Platform",
   description: "Conversational AI Publishing Platform",

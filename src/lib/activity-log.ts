@@ -86,10 +86,3 @@ export function getActivityLog(limit?: number): ActivityEntry[] {
     if (limit) return log.slice(0, limit);
     return log;
 }
-
-/**
- * Get log entries filtered by type.
- */
-export function getActivitiesByType(type: ActivityType): ActivityEntry[] {
-    return readLog().filter((e) => e.type === type);
-}

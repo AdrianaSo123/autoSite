@@ -1,93 +1,22 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useChat } from "@/hooks/useChat";
 
-interface AdminMessage {
-    id: string;
-    role: "admin" | "system";
-    content: string;
-    timestamp: Date;
-}
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 
 const ADMIN_COMMANDS = [
     "Process latest recording",
     "Publish draft",
-    "Regenerate article",
-    "Show analytics",
-    "System status",
+    "Show recent posts",
+    "Search posts",
+    "Blog summary",
 ];
 
 export default function AdminChat() {
-    const [messages, setMessages] = useState<AdminMessage[]>([
-        {
-            id: "welcome",
-            role: "system",
-            content: "Admin console ready. Enter a command or select one below.",
-            timestamp: new Date(),
-        },
-    ]);
-    const [input, setInput] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
-    const messagesEndRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [messages]);
-
-    const executeCommand = async (command?: string) => {
-        const cmd = command || input.trim();
-        if (!cmd || isLoading) return;
-
-        const adminMsg: AdminMessage = {
-            id: Date.now().toString(),
-            role: "admin",
-            content: cmd,
-            timestamp: new Date(),
-        };
-
-        setMessages((prev) => [...prev, adminMsg]);
-        setInput("");
-        setIsLoading(true);
-
-        try {
-            const response = await fetch("/api/chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: cmd }),
-            });
-
-            const data = await response.json();
-
-            setMessages((prev) => [
-                ...prev,
-                {
-                    id: (Date.now() + 1).toString(),
-                    role: "system",
-                    content: data.reply || "Command executed.",
-                    timestamp: new Date(),
-                },
-            ]);
-        } catch {
-            setMessages((prev) => [
-                ...prev,
-                {
-                    id: (Date.now() + 1).toString(),
-                    role: "system",
-                    content: "Error executing command. Please try again.",
-                    timestamp: new Date(),
-                },
-            ]);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            executeCommand();
-        }
-    };
+    const { messages, input, isLoading, setInput, sendMessage, handleKeyDown, messagesEndRef } =
+        useChat({ welcomeMessage: "Admin console ready. Enter a command or select one below." });
 
     return (
         <div
@@ -102,17 +31,17 @@ export default function AdminChat() {
                 {messages.map((msg) => (
                     <div
                         key={msg.id}
-                        className={`flex ${msg.role === "admin" ? "justify-end" : "justify-start"}`}
+                        className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                     >
                         <div
                             className="max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed"
                             style={{
-                                background: msg.role === "admin" ? "var(--ink)" : "var(--ink-faint)",
-                                color: msg.role === "admin" ? "var(--cream)" : "var(--ink)",
+                                background: msg.role === "user" ? "var(--ink)" : "var(--ink-faint)",
+                                color: msg.role === "user" ? "var(--cream)" : "var(--ink)",
                                 fontFamily: "'Inter', monospace",
                             }}
                         >
-                            {msg.role === "system" && (
+                            {msg.role === "assistant" && (
                                 <span className="text-xs opacity-60 block mb-1">⚙ System</span>
                             )}
                             {msg.content}
@@ -143,7 +72,7 @@ export default function AdminChat() {
                 {ADMIN_COMMANDS.map((cmd) => (
                     <button
                         key={cmd}
-                        onClick={() => executeCommand(cmd)}
+                        onClick={() => sendMessage(cmd)}
                         className="pill-button-outline text-xs py-1.5 px-3"
                         style={{ borderRadius: "999px", fontSize: "0.7rem" }}
                     >
@@ -168,7 +97,7 @@ export default function AdminChat() {
                     disabled={isLoading}
                 />
                 <button
-                    onClick={() => executeCommand()}
+                    onClick={() => sendMessage()}
                     disabled={isLoading || !input.trim()}
                     className="pill-button text-sm disabled:opacity-40 disabled:cursor-not-allowed"
                 >

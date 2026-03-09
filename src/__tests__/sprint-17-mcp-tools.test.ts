@@ -8,7 +8,7 @@ jest.mock("@/lib/posts", () => ({
     ],
 }));
 
-import { toolRegistry, getToolsForUser } from "@/lib/agent";
+import { toolRegistry, getToolsForUser } from "@/lib/mcp/tool-registry";
 
 describe("Sprint 17 — MCP Tool Infrastructure", () => {
     it("has a tool registry with registered tools", () => {
@@ -29,12 +29,12 @@ describe("Sprint 17 — MCP Tool Infrastructure", () => {
         expect(toolRegistry.find((t) => t.name === "listRecentPosts")).toBeDefined();
     });
 
-    it("contains getSiteAnalytics tool", () => {
-        expect(toolRegistry.find((t) => t.name === "getSiteAnalytics")).toBeDefined();
+    it("contains searchBlogPosts tool", () => {
+        expect(toolRegistry.find((t) => t.name === "searchBlogPosts")).toBeDefined();
     });
 
-    it("contains getSystemStatus tool", () => {
-        expect(toolRegistry.find((t) => t.name === "getSystemStatus")).toBeDefined();
+    it("contains getPostSummary tool", () => {
+        expect(toolRegistry.find((t) => t.name === "getPostSummary")).toBeDefined();
     });
 
     it("provides getToolsForUser function", () => {

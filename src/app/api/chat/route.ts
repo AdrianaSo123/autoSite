@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { routeCommand } from "@/lib/commands";
-import { agentProcess } from "@/lib/agent";
+import { routeToTool } from "@/lib/mcp/tool-router";
 import { auth } from "@/lib/auth";
 import { logActivity } from "@/lib/activity-log";
 
@@ -12,21 +12,26 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ reply: "Please send a message." }, { status: 400 });
         }
 
-        // Determine if user is admin
         const session = await auth();
         const isAdmin = !!session?.user;
 
-        // Try the AI agent first (respects tool permissions)
-        const agentResult = await agentProcess(message, isAdmin);
-        if (agentResult) {
+        // 1. Try MCP tool routing (keyword + LLM)
+        let toolResult = "";
+        try {
+            toolResult = await routeToTool(message, isAdmin);
+        } catch (error) {
+            console.error("Tool routing error:", error);
+        }
+
+        if (toolResult) {
             logActivity("mcp_tool_executed", { message, isAdmin });
             return NextResponse.json({
-                reply: agentResult,
+                reply: toolResult,
                 action: "agent_tool_call",
             });
         }
 
-        // Fall back to command router
+        // 2. Fall back to command router (greetings, help, admin, actions)
         const result = await routeCommand(message);
 
         return NextResponse.json({
@@ -35,6 +40,9 @@ export async function POST(request: NextRequest) {
         });
     } catch (error) {
         console.error("Chat error:", error);
-        return NextResponse.json({ reply: "Something went wrong." }, { status: 500 });
+        return NextResponse.json(
+            { reply: "Something went wrong. Please try again or say \"help\" for available commands." },
+            { status: 500 }
+        );
     }
 }

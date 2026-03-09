@@ -6,45 +6,25 @@ import html from "remark-html";
 
 const postsDirectory = path.join(process.cwd(), "posts");
 
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
 export interface Post {
     slug: string;
     title: string;
     date: string;
     excerpt: string;
     content: string;
-    htmlContent?: string;
 }
 
-export function getAllPosts(): Post[] {
-    if (!fs.existsSync(postsDirectory)) return [];
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
-    const fileNames = fs.readdirSync(postsDirectory).filter((f) => f.endsWith(".md"));
-
-    const posts: Post[] = fileNames.map((fileName) => {
-        const slug = fileName.replace(/\.md$/, "");
-        const fullPath = path.join(postsDirectory, fileName);
-        const fileContents = fs.readFileSync(fullPath, "utf8");
-        const { data, content } = matter(fileContents);
-
-        return {
-            slug,
-            title: data.title || slug,
-            date: data.date || "",
-            excerpt: data.excerpt || "",
-            content,
-        };
-    });
-
-    return posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-}
-
-export function getPostBySlug(slug: string): Post | undefined {
-    const fullPath = path.join(postsDirectory, `${slug}.md`);
-    if (!fs.existsSync(fullPath)) return undefined;
-
-    const fileContents = fs.readFileSync(fullPath, "utf8");
-    const { data, content } = matter(fileContents);
-
+/** Parse a markdown file's frontmatter into a Post object. */
+function parsePostFile(slug: string, raw: string): Post {
+    const { data, content } = matter(raw);
     return {
         slug,
         title: data.title || slug,
@@ -52,6 +32,31 @@ export function getPostBySlug(slug: string): Post | undefined {
         excerpt: data.excerpt || "",
         content,
     };
+}
+
+/** Read a single .md file and parse it, or return undefined if missing. */
+function readPostFile(slug: string): Post | undefined {
+    const filePath = path.join(postsDirectory, `${slug}.md`);
+    if (!fs.existsSync(filePath)) return undefined;
+    return parsePostFile(slug, fs.readFileSync(filePath, "utf8"));
+}
+
+// ---------------------------------------------------------------------------
+// Public API
+// ---------------------------------------------------------------------------
+
+export function getAllPosts(): Post[] {
+    if (!fs.existsSync(postsDirectory)) return [];
+
+    return fs
+        .readdirSync(postsDirectory)
+        .filter((f) => f.endsWith(".md"))
+        .map((f) => readPostFile(f.replace(/\.md$/, ""))!)
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+}
+
+export function getPostBySlug(slug: string): Post | undefined {
+    return readPostFile(slug);
 }
 
 export async function getPostHtml(content: string): Promise<string> {

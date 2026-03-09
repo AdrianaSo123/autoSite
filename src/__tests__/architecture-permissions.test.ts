@@ -1,5 +1,5 @@
 /**
- * Architecture Stabilization Tests — Permission Enforcement (Section 8)
+ * Architecture Stabilization Tests — Permission Enforcement
  */
 
 // Mock posts
@@ -9,7 +9,7 @@ jest.mock("@/lib/posts", () => ({
     ],
 }));
 
-import { getToolsForUser, toolRegistry } from "@/lib/agent";
+import { getToolsForUser, toolRegistry } from "@/lib/mcp/tool-registry";
 
 describe("Tool Permission Enforcement", () => {
     it("public user only gets public tools", () => {
@@ -17,18 +17,6 @@ describe("Tool Permission Enforcement", () => {
         tools.forEach((t) => {
             expect(t.access).toBe("public");
         });
-    });
-
-    it("public user cannot access getSiteAnalytics", () => {
-        const tools = getToolsForUser(false);
-        const analyticsTool = tools.find((t) => t.name === "getSiteAnalytics");
-        expect(analyticsTool).toBeUndefined();
-    });
-
-    it("public user cannot access getSystemStatus", () => {
-        const tools = getToolsForUser(false);
-        const statusTool = tools.find((t) => t.name === "getSystemStatus");
-        expect(statusTool).toBeUndefined();
     });
 
     it("public user can access listRecentPosts", () => {
@@ -45,38 +33,28 @@ describe("Tool Permission Enforcement", () => {
         expect(searchTool?.access).toBe("public");
     });
 
-    it("admin user gets all tools (public + admin)", () => {
+    it("public user can access getPostSummary", () => {
+        const tools = getToolsForUser(false);
+        const summaryTool = tools.find((t) => t.name === "getPostSummary");
+        expect(summaryTool).toBeDefined();
+        expect(summaryTool?.access).toBe("public");
+    });
+
+    it("admin user gets all tools", () => {
         const tools = getToolsForUser(true);
         expect(tools.length).toBe(toolRegistry.length);
     });
 
-    it("admin user can access getSiteAnalytics", () => {
-        const tools = getToolsForUser(true);
-        const analyticsTool = tools.find((t) => t.name === "getSiteAnalytics");
-        expect(analyticsTool).toBeDefined();
-        expect(analyticsTool?.access).toBe("admin");
-    });
-
-    it("admin user can call analytics tool successfully", async () => {
-        const tools = getToolsForUser(true);
-        const analyticsTool = tools.find((t) => t.name === "getSiteAnalytics");
-        expect(analyticsTool).toBeDefined();
-        const result = await analyticsTool!.execute();
-        expect(result).toContain("Analytics");
-    });
-
-    it("tool registry has correct access labels", () => {
-        const publicTools = toolRegistry.filter((t) => t.access === "public");
-        const adminTools = toolRegistry.filter((t) => t.access === "admin");
-        expect(publicTools.length).toBeGreaterThan(0);
-        expect(adminTools.length).toBeGreaterThan(0);
+    it("tool registry has correct structure", () => {
+        expect(toolRegistry.length).toBeGreaterThan(0);
+        toolRegistry.forEach((t) => {
+            expect(["public", "admin"]).toContain(t.access);
+        });
     });
 });
 
 describe("NavBar Visibility", () => {
     it("Studio link is hidden for public users (unauthenticated)", () => {
-        // NavBar shows Studio only when session.user exists
-        // This test validates the logic conceptually
         const isAdmin = false;
         const showStudio = isAdmin;
         expect(showStudio).toBe(false);

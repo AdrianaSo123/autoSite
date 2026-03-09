@@ -9,6 +9,14 @@ interface ActivityEntry {
     metadata: Record<string, unknown>;
 }
 
+interface Metrics {
+    totalEvents: number;
+    toolsExecuted: number;
+    postsGenerated: number;
+    recordingsProcessed: number;
+    articlesPublished: number;
+}
+
 const TYPE_LABELS: Record<string, { icon: string; label: string }> = {
     audio_uploaded: { icon: "🎙️", label: "Recording uploaded" },
     transcription_completed: { icon: "📝", label: "Transcription completed" },
@@ -16,6 +24,16 @@ const TYPE_LABELS: Record<string, { icon: string; label: string }> = {
     article_published: { icon: "📰", label: "Article published" },
     mcp_tool_executed: { icon: "⚙️", label: "Tool executed" },
 };
+
+function computeMetrics(activities: ActivityEntry[]): Metrics {
+    return {
+        totalEvents: activities.length,
+        toolsExecuted: activities.filter((a) => a.type === "mcp_tool_executed").length,
+        postsGenerated: activities.filter((a) => a.type === "article_generated").length,
+        recordingsProcessed: activities.filter((a) => a.type === "audio_uploaded").length,
+        articlesPublished: activities.filter((a) => a.type === "article_published").length,
+    };
+}
 
 export default function ActivityDashboard() {
     const [activities, setActivities] = useState<ActivityEntry[]>([]);
@@ -47,6 +65,8 @@ export default function ActivityDashboard() {
         });
     };
 
+    const metrics = computeMetrics(activities);
+
     return (
         <div
             className="rounded-2xl overflow-hidden"
@@ -63,7 +83,7 @@ export default function ActivityDashboard() {
                     className="text-sm font-semibold"
                     style={{ fontFamily: "'Playfair Display', serif", color: "var(--ink)" }}
                 >
-                    ✦ Recent Activity
+                    ✦ Platform Activity
                 </h3>
                 <button
                     onClick={fetchActivities}
@@ -73,6 +93,19 @@ export default function ActivityDashboard() {
                     Refresh
                 </button>
             </div>
+
+            {/* Metrics summary */}
+            {!loading && activities.length > 0 && (
+                <div
+                    className="grid grid-cols-2 md:grid-cols-4 gap-3 px-5 py-4"
+                    style={{ borderBottom: "1px solid var(--ink-border)" }}
+                >
+                    <MetricCard label="Tools Executed" value={metrics.toolsExecuted} icon="⚙️" />
+                    <MetricCard label="Posts Generated" value={metrics.postsGenerated} icon="✨" />
+                    <MetricCard label="Recordings" value={metrics.recordingsProcessed} icon="🎙️" />
+                    <MetricCard label="Published" value={metrics.articlesPublished} icon="📰" />
+                </div>
+            )}
 
             <div className="p-4 space-y-2 max-h-80 overflow-y-auto">
                 {loading ? (
@@ -116,6 +149,23 @@ export default function ActivityDashboard() {
                     })
                 )}
             </div>
+        </div>
+    );
+}
+
+function MetricCard({ label, value, icon }: { label: string; value: number; icon: string }) {
+    return (
+        <div className="text-center py-2">
+            <span className="text-xl">{icon}</span>
+            <p
+                className="text-2xl font-semibold mt-1"
+                style={{ fontFamily: "'Playfair Display', serif", color: "var(--ink)" }}
+            >
+                {value}
+            </p>
+            <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                {label}
+            </p>
         </div>
     );
 }

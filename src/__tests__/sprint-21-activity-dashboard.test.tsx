@@ -30,7 +30,7 @@ global.fetch = jest.fn(() =>
 describe("Sprint 21 — Admin Activity Dashboard", () => {
     it("renders the activity dashboard", async () => {
         render(<ActivityDashboard />);
-        expect(screen.getByText(/Recent Activity/i)).toBeTruthy();
+        expect(screen.getByText(/Platform Activity/i)).toBeTruthy();
     });
 
     it("fetches activities on mount", () => {
