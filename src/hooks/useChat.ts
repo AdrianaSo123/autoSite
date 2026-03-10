@@ -11,6 +11,7 @@ export interface ChatMessage {
     role: "user" | "assistant";
     content: string;
     timestamp: Date;
+    suggestedActions?: string[];
 }
 
 interface UseChatOptions {
@@ -24,8 +25,13 @@ interface UseChatOptions {
 
 interface ChatResponse {
     reply?: string;
+    message?: string;
     action?: string;
+    suggestedActions?: string[];
 }
+
+const MAX_HISTORY_MESSAGES = 20;
+const MAX_MESSAGE_CHARS = 1800;
 
 interface UseChatReturn {
     messages: ChatMessage[];
@@ -66,11 +72,21 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
             if (!content || isLoading) return;
 
             setMessages((prev) => [
-                ...prev,
+                ...prev.map((m) => ({
+                    ...m,
+                    suggestedActions: m.role === "assistant" ? undefined : m.suggestedActions,
+                })),
                 { id: Date.now().toString(), role: "user", content, timestamp: new Date() },
             ]);
             setInput("");
             setIsLoading(true);
+
+            const history = messages
+                .slice(-MAX_HISTORY_MESSAGES)
+                .map((m) => ({
+                    role: m.role,
+                    content: m.content.slice(0, MAX_MESSAGE_CHARS),
+                }));
 
             if (!hasNotified && onFirstMessage) {
                 onFirstMessage();
@@ -81,7 +97,10 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
                 const response = await fetch("/api/chat", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ message: content }),
+                    body: JSON.stringify({
+                        message: content.slice(0, MAX_MESSAGE_CHARS),
+                        history,
+                    }),
                 });
                 const data: ChatResponse = await response.json();
 
@@ -90,8 +109,12 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
                     {
                         id: (Date.now() + 1).toString(),
                         role: "assistant",
-                        content: data.reply || "I'm not sure how to respond to that. Try saying \"help\" to see what I can do.",
+                        content:
+                            data.reply ||
+                            data.message ||
+                            "I'm not sure how to respond to that. Try saying \"help\" to see what I can do.",
                         timestamp: new Date(),
+                        suggestedActions: data.suggestedActions?.slice(0, 3),
                     },
                 ]);
 
@@ -114,7 +137,7 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
                 setIsLoading(false);
             }
         },
-        [input, isLoading, hasNotified, onFirstMessage, onAction]
+        [input, isLoading, hasNotified, messages, onFirstMessage, onAction]
     );
 
     const handleKeyDown = useCallback(

@@ -21,14 +21,14 @@ describe("Sprint 14 — Chat Prompt Suggestions", () => {
 
     it("displays suggestion buttons", () => {
         render(<HomeClient />);
-        expect(screen.getByText("Show recent posts")).toBeTruthy();
-        expect(screen.getByText("What is this project?")).toBeTruthy();
-        expect(screen.getByText("Help")).toBeTruthy();
+        expect(screen.getByText("What are the latest AI trends?")).toBeTruthy();
+        expect(screen.getByText("Show recent blog posts")).toBeTruthy();
+        expect(screen.getByText("Explain agentic AI systems")).toBeTruthy();
     });
 
     it("sends message directly when clicking a prompt suggestion", async () => {
         render(<HomeClient />);
-        const button = screen.getByText("Show recent posts");
+        const button = screen.getByText("Show recent blog posts");
         fireEvent.click(button);
 
         await waitFor(() => {

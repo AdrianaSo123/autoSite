@@ -70,7 +70,11 @@ function renderMarkdown(text: string): React.ReactNode {
 // Component
 // ---------------------------------------------------------------------------
 
-const SUGGESTIONS = ["Show recent posts", "What is this project?", "Search posts", "Help"];
+const SUGGESTIONS = [
+    "What are the latest AI trends?",
+    "Show recent blog posts",
+    "Explain agentic AI systems",
+];
 
 interface ChatInterfaceProps {
     onFirstMessage?: () => void;
@@ -155,17 +159,35 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
                         key={msg.id}
                         className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                     >
-                        <div
-                            className={`max-w-[85%] md:max-w-[75%] rounded-2xl px-5 py-4 text-base leading-relaxed ${msg.role === "user" ? "rounded-br-sm" : "rounded-bl-sm"
-                                }`}
-                            style={{
-                                background: msg.role === "user" ? "var(--ink)" : "var(--cream-light)",
-                                color: msg.role === "user" ? "var(--cream)" : "var(--ink)",
-                                border: msg.role === "assistant" ? "1px solid var(--ink-border)" : "none",
-                                fontFamily: "'Inter', sans-serif",
-                            }}
-                        >
-                            {renderMarkdown(msg.content)}
+                        <div className="max-w-[85%] md:max-w-[75%]">
+                            <div
+                                className={`rounded-2xl px-5 py-4 text-base leading-relaxed ${msg.role === "user" ? "rounded-br-sm" : "rounded-bl-sm"
+                                    }`}
+                                style={{
+                                    background: msg.role === "user" ? "var(--ink)" : "var(--cream-light)",
+                                    color: msg.role === "user" ? "var(--cream)" : "var(--ink)",
+                                    border: msg.role === "assistant" ? "1px solid var(--ink-border)" : "none",
+                                    fontFamily: "'Inter', sans-serif",
+                                }}
+                            >
+                                {renderMarkdown(msg.content)}
+                            </div>
+
+                            {msg.role === "assistant" && msg.suggestedActions && msg.suggestedActions.length > 0 && (
+                                <div className="flex flex-wrap gap-2 mt-2 pl-1">
+                                    {msg.suggestedActions.slice(0, 3).map((suggestion) => (
+                                        <button
+                                            key={`${msg.id}-${suggestion}`}
+                                            onClick={() => handleSend(suggestion)}
+                                            className="pill-button-outline text-xs py-1.5 px-3"
+                                            style={{ borderRadius: "999px" }}
+                                            disabled={isLoading}
+                                        >
+                                            {suggestion}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
                 ))}

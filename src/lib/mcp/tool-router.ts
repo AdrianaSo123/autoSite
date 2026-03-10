@@ -7,6 +7,18 @@
 
 import { MCPTool, getToolsForUser } from "@/lib/mcp/tool-registry";
 
+const BLOG_INTENT_TERMS = [
+    "blog",
+    "post",
+    "posts",
+    "article",
+    "articles",
+    "written",
+    "writeups",
+    "published",
+    "publish",
+];
+
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
@@ -21,6 +33,25 @@ export async function routeToTool(
 ): Promise<string> {
     const lower = message.toLowerCase();
     const tools = getToolsForUser(isAdmin);
+
+    // 0. Blog-intent fast path for natural requests
+    if (containsBlogIntent(lower)) {
+        const recentTool = tools.find((t) => t.name === "listRecentPosts");
+        if (recentTool && /(recent|latest|new|newest|what have you written)/.test(lower)) {
+            return recentTool.execute();
+        }
+
+        const searchTool = tools.find((t) => t.name === "searchBlogPosts");
+        if (searchTool) {
+            const cleaned = lower
+                .replace(/what have you written about/gi, "")
+                .replace(/articles? on/gi, "")
+                .replace(/blog about/gi, "")
+                .replace(/posts? about/gi, "")
+                .trim();
+            return searchTool.execute({ query: cleaned || message });
+        }
+    }
 
     // 1. Keyword match — fast, deterministic
     for (const tool of tools) {
@@ -50,6 +81,7 @@ const KEYWORD_MAP: Record<string, string[]> = {
     searchBlogPosts: [
         "search", "find posts", "posts about", "search blog", "search posts",
         "look for", "find articles", "articles about", "do you have posts",
+        "blog about", "articles on", "what have you written about", "written about",
     ],
     getPostSummary: [
         "post summary", "how many posts", "blog summary", "blog stats",
@@ -60,6 +92,10 @@ const KEYWORD_MAP: Record<string, string[]> = {
 function matchesKeywords(lower: string, toolName: string): boolean {
     const keywords = KEYWORD_MAP[toolName] || [];
     return keywords.some((kw) => lower.includes(kw));
+}
+
+function containsBlogIntent(lower: string): boolean {
+    return BLOG_INTENT_TERMS.some((term) => lower.includes(term));
 }
 
 // ---------------------------------------------------------------------------
