@@ -12,6 +12,8 @@ interface ActivityEntry {
 interface Metrics {
     totalEvents: number;
     toolsExecuted: number;
+    commandsRouted: number;
+    llmFallbacks: number;
     postsGenerated: number;
     recordingsProcessed: number;
     articlesPublished: number;
@@ -23,12 +25,17 @@ const TYPE_LABELS: Record<string, { icon: string; label: string }> = {
     article_generated: { icon: "✨", label: "Blog post generated" },
     article_published: { icon: "📰", label: "Article published" },
     mcp_tool_executed: { icon: "⚙️", label: "Tool executed" },
+    command_routed: { icon: "🧭", label: "Command routed" },
+    llm_fallback_used: { icon: "🛟", label: "LLM fallback used" },
+    tool_response_summarized: { icon: "🧠", label: "Tool response summarized" },
 };
 
 function computeMetrics(activities: ActivityEntry[]): Metrics {
     return {
         totalEvents: activities.length,
         toolsExecuted: activities.filter((a) => a.type === "mcp_tool_executed").length,
+        commandsRouted: activities.filter((a) => a.type === "command_routed").length,
+        llmFallbacks: activities.filter((a) => a.type === "llm_fallback_used").length,
         postsGenerated: activities.filter((a) => a.type === "article_generated").length,
         recordingsProcessed: activities.filter((a) => a.type === "audio_uploaded").length,
         articlesPublished: activities.filter((a) => a.type === "article_published").length,
@@ -97,10 +104,12 @@ export default function ActivityDashboard() {
             {/* Metrics summary */}
             {!loading && activities.length > 0 && (
                 <div
-                    className="grid grid-cols-2 md:grid-cols-4 gap-3 px-5 py-4"
+                    className="grid grid-cols-2 md:grid-cols-3 gap-3 px-5 py-4"
                     style={{ borderBottom: "1px solid var(--ink-border)" }}
                 >
                     <MetricCard label="Tools Executed" value={metrics.toolsExecuted} icon="⚙️" />
+                    <MetricCard label="Commands Routed" value={metrics.commandsRouted} icon="🧭" />
+                    <MetricCard label="LLM Fallbacks" value={metrics.llmFallbacks} icon="🛟" />
                     <MetricCard label="Posts Generated" value={metrics.postsGenerated} icon="✨" />
                     <MetricCard label="Recordings" value={metrics.recordingsProcessed} icon="🎙️" />
                     <MetricCard label="Published" value={metrics.articlesPublished} icon="📰" />

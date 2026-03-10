@@ -35,6 +35,11 @@ describe("Sprint 19 — Chat Command Router", () => {
 
     it("handles unknown commands gracefully", async () => {
         const result = await routeCommand("xyzzy random thing");
-        expect(result.reply).toContain("help");
+        expect(result).toBeNull();
+    });
+
+    it("does not trigger commands for incidental keywords", async () => {
+        const result = await routeCommand("can you publish draft ideas for me?");
+        expect(result).toBeNull();
     });
 });

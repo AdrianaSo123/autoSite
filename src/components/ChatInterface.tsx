@@ -99,6 +99,35 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
         sendMessage(text);
     };
 
+    const renderStarterPrompts = ({ compact }: { compact: boolean }) => (
+        <div className={`flex flex-wrap ${compact ? "gap-2 mb-1" : "gap-3 justify-center"}`}>
+            {SUGGESTIONS.map((prompt) => (
+                <button
+                    key={`${compact ? "compact" : "hero"}-${prompt}`}
+                    onClick={() => handleSend(prompt)}
+                    className={`pill-button-outline ${compact ? "text-xs py-1.5 px-3 bg-white" : "text-sm py-2 px-5"}`}
+                    style={{
+                        borderRadius: "999px",
+                        ...(compact
+                            ? { fontSize: "0.75rem", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }
+                            : {}),
+                    }}
+                >
+                    {prompt}
+                </button>
+            ))}
+        </div>
+    );
+
+    const lastAssistantIndex = (() => {
+        for (let i = messages.length - 1; i >= 0; i--) {
+            if (messages[i].role === "assistant") return i;
+        }
+        return -1;
+    })();
+
+    const conversationContinued = messages.length > 0 && messages[messages.length - 1].role === "user";
+
     return (
         <div
             className="w-full flex-1 flex flex-col relative"
@@ -138,23 +167,12 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
                             Ask me anything to get started.
                         </p>
 
-                        <div className="flex gap-3 flex-wrap justify-center">
-                            {SUGGESTIONS.map((prompt) => (
-                                <button
-                                    key={prompt}
-                                    onClick={() => handleSend(prompt)}
-                                    className="pill-button-outline text-sm py-2 px-5"
-                                    style={{ borderRadius: "999px" }}
-                                >
-                                    {prompt}
-                                </button>
-                            ))}
-                        </div>
+                        {renderStarterPrompts({ compact: false })}
                     </div>
                 )}
 
                 {/* Chat messages */}
-                {messages.map((msg) => (
+                {messages.map((msg, index) => (
                     <div
                         key={msg.id}
                         className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
@@ -173,14 +191,18 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
                                 {renderMarkdown(msg.content)}
                             </div>
 
-                            {msg.role === "assistant" && msg.suggestedActions && msg.suggestedActions.length > 0 && (
-                                <div className="flex flex-wrap gap-2 mt-2 pl-1">
+                            {msg.role === "assistant" &&
+                                index === lastAssistantIndex &&
+                                !conversationContinued &&
+                                msg.suggestedActions &&
+                                msg.suggestedActions.length > 0 && (
+                                <div className="flex flex-wrap gap-1.5 mt-2 pl-1">
                                     {msg.suggestedActions.slice(0, 3).map((suggestion) => (
                                         <button
                                             key={`${msg.id}-${suggestion}`}
                                             onClick={() => handleSend(suggestion)}
-                                            className="pill-button-outline text-xs py-1.5 px-3"
-                                            style={{ borderRadius: "999px" }}
+                                            className="pill-button-outline text-xs py-1 px-2.5 leading-5"
+                                            style={{ borderRadius: "999px", maxWidth: "100%" }}
                                             disabled={isLoading}
                                         >
                                             {suggestion}
@@ -214,18 +236,7 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
             <div className="absolute bottom-4 left-0 right-0 px-4 md:px-8 pointer-events-none">
                 <div className="max-w-4xl mx-auto flex flex-col gap-2 pointer-events-auto">
                     {!isEmpty && (
-                        <div className="flex gap-2 flex-wrap mb-1">
-                            {SUGGESTIONS.map((prompt) => (
-                                <button
-                                    key={prompt}
-                                    onClick={() => handleSend(prompt)}
-                                    className="pill-button-outline text-xs py-1.5 px-3 bg-white"
-                                    style={{ borderRadius: "999px", fontSize: "0.75rem", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}
-                                >
-                                    {prompt}
-                                </button>
-                            ))}
-                        </div>
+                        renderStarterPrompts({ compact: true })
                     )}
 
                     <div

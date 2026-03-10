@@ -616,7 +616,12 @@ describe("Sprint 19 — Chat Command Router", () => {
 
     it("handles unknown commands gracefully", async () => {
         const result = await routeCommand("xyzzy random thing");
-        expect(result.reply).toContain("help");
+        expect(result).toBeNull();
+    });
+
+    it("does not trigger commands for incidental keywords", async () => {
+        const result = await routeCommand("can you publish draft ideas for me?");
+        expect(result).toBeNull();
     });
 });
 
@@ -1443,25 +1448,38 @@ const PRIMARY_MODEL = "gpt-4.1";
 const FALLBACK_MODEL = "gpt-4o";
 const MAX_HISTORY_MESSAGES = 20;
 const MAX_MESSAGE_CHARS = 1800;
+const OPENAI_TIMEOUT_MS = 12000;
 
 const SYSTEM_PROMPT =
     "You are the AI assistant for the Strategic AI Intelligence website. " +
     "Help users explore blog posts and understand AI topics. " +
     "If users ask about blog posts, articles, or topics, search the blog tools before answering. " +
+    "Maintain continuity with prior turns and resolve follow-up references like 'this', 'that', or 'it' using conversation context. " +
+    "When sharing tool-derived information, present it as a concise, readable summary. " +
     "Be concise, clear, and practical.";
 
-function buildSuggestions(message: string, reply: string): string[] {
+function buildSuggestions(message: string, reply: string, history: IncomingMessage[] = []): string[] {
     const messageLower = message.toLowerCase();
     const replyLower = reply.toLowerCase();
+    const historyText = history
+        .slice(-6)
+        .map((m) => m.content.toLowerCase())
+        .join(" ");
+    const contextText = `${messageLower} ${historyText}`;
 
     const looksLikeBlogResponse =
         /\/blog\//.test(replyLower) ||
-        /recent posts|found\s+\d+\s+post|blog summary|post\(s\)/.test(replyLower) ||
-        /(blog|post|article)/.test(messageLower);
+        /recent posts|found\s+\d+\s+post|blog summary|post\(s\)|\d+\.\s+.+\/blog\//.test(replyLower) ||
+        /(blog|post|article)/.test(contextText);
 
     const looksLikeConceptResponse =
-        /(explain|what is|how does|concept|difference|agentic|ai)/.test(messageLower) &&
+        /(explain|what is|how does|concept|difference|agentic|ai|llm|model)/.test(contextText) &&
         !looksLikeBlogResponse;
+
+    const looksGeneralQuestion =
+        /(what|why|how|should|can|could|would)/.test(contextText) &&
+        !looksLikeBlogResponse &&
+        !looksLikeConceptResponse;
 
     let candidates: string[];
 
@@ -1474,8 +1492,14 @@ function buildSuggestions(message: string, reply: string): string[] {
     } else if (looksLikeConceptResponse) {
         candidates = [
             "Show blog posts about this",
-            "Explain this more simply",
             "Give real-world examples",
+            "Explain this more simply",
+        ];
+    } else if (looksGeneralQuestion) {
+        candidates = [
+            "Show recent blog posts",
+            "Show related AI topics",
+            "Give a practical next step",
         ];
     } else {
         candidates = [
@@ -1497,9 +1521,12 @@ function buildSuggestions(message: string, reply: string): string[] {
 function toResponse(
     reply: string,
     action: string | null = null,
-    messageForSuggestions?: string
+    messageForSuggestions?: string,
+    historyForSuggestions: IncomingMessage[] = []
 ): ChatApiResponse {
-    const suggestedActions = messageForSuggestions ? buildSuggestions(messageForSuggestions, reply) : [];
+    const suggestedActions = messageForSuggestions
+        ? buildSuggestions(messageForSuggestions, reply, historyForSuggestions)
+        : [];
 
     return {
         reply,
@@ -1530,29 +1557,71 @@ async function requestChatCompletion(
     model: string,
     messages: Array<{ role: "system" | "user" | "assistant"; content: string }>
 ): Promise<string | null> {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), OPENAI_TIMEOUT_MS);
+
+    try {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+            },
+            body: JSON.stringify({
+                model,
+                messages,
+                temperature: 0.3,
+            }),
+            signal: controller.signal,
+        });
+
+        if (!response.ok) return null;
+
+        const payload = (await response.json()) as ChatCompletionPayload;
+        const text = payload.choices?.[0]?.message?.content?.trim();
+        return text || null;
+    } catch {
+        return null;
+    } finally {
+        clearTimeout(timeout);
+    }
+}
+
+async function summarizeToolResult(
+    userMessage: string,
+    toolResult: string,
+    history: IncomingMessage[]
+): Promise<string | null> {
+    if (!process.env.OPENAI_API_KEY) return null;
+
+    const summaryMessages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [
+        {
+            role: "system",
+            content:
+                "Summarize tool output for an end user in 2-5 short lines. " +
+                "Keep key facts, remove noise, and preserve links/paths when present. " +
+                "Do not invent data.",
         },
-        body: JSON.stringify({
-            model,
-            messages,
-            temperature: 0.3,
-        }),
-    });
+        ...history.slice(-4),
+        {
+            role: "user",
+            content:
+                `User request: ${userMessage}\n\n` +
+                `Tool output:\n${toolResult.slice(0, 4000)}`,
+        },
+    ];
 
-    if (!response.ok) return null;
-
-    const payload = (await response.json()) as ChatCompletionPayload;
-    const text = payload.choices?.[0]?.message?.content?.trim();
-    return text || null;
+    let summary = await requestChatCompletion(PRIMARY_MODEL, summaryMessages);
+    if (!summary) {
+        logActivity("llm_fallback_used", { stage: "tool_summary", reason: "primary_failed" });
+        summary = await requestChatCompletion(FALLBACK_MODEL, summaryMessages);
+    }
+    return summary;
 }
 
 export async function POST(request: NextRequest) {
     try {
-        const body = (await request.json()) as ChatRequestBody;
+        const body = (await request.json().catch(() => ({}))) as ChatRequestBody;
         const message = typeof body.message === "string" ? body.message.trim() : "";
 
         if (!message) {
@@ -1572,21 +1641,46 @@ export async function POST(request: NextRequest) {
         }
 
         if (toolResult) {
-            logActivity("mcp_tool_executed", { message, isAdmin });
-            return NextResponse.json(toResponse(toolResult, "agent_tool_call", message));
+            logActivity("mcp_tool_executed", {
+                route: "chat_api",
+                isAdmin,
+                hadHistory: history.length > 0,
+            });
+
+            const summarized = await summarizeToolResult(message, toolResult, history);
+            const reply = summarized || toolResult;
+
+            if (summarized) {
+                logActivity("tool_response_summarized", { route: "chat_api" });
+            }
+
+            return NextResponse.json(toResponse(reply, "agent_tool_call", message, history));
         }
 
         // 2. Fall back to command router (greetings, help, admin, actions)
         const result = await routeCommand(message);
 
-        if (result.handled) {
+        if (result) {
+            logActivity("command_routed", {
+                route: "chat_api",
+                action: result.action || "none",
+            });
             const suggestionSource = result.action ? undefined : message;
-            return NextResponse.json(toResponse(result.reply, result.action || null, suggestionSource));
+            return NextResponse.json(
+                toResponse(result.reply, result.action || null, suggestionSource, history)
+            );
         }
 
         // 3. LLM assistant response with system prompt + multi-turn history
         if (!process.env.OPENAI_API_KEY) {
-            return NextResponse.json(toResponse(result.reply, null, message));
+            return NextResponse.json(
+                toResponse(
+                    "I can help with blog discovery and AI topics. Try asking for recent posts or an explanation of a concept.",
+                    null,
+                    message,
+                    history
+                )
+            );
         }
 
         const promptMessages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [
@@ -1597,6 +1691,7 @@ export async function POST(request: NextRequest) {
 
         let reply = await requestChatCompletion(PRIMARY_MODEL, promptMessages);
         if (!reply) {
+            logActivity("llm_fallback_used", { stage: "chat_reply", reason: "primary_failed" });
             reply = await requestChatCompletion(FALLBACK_MODEL, promptMessages);
         }
 
@@ -1605,7 +1700,8 @@ export async function POST(request: NextRequest) {
                 reply ||
                     "I hit a temporary model issue. Please try again, or ask me to show recent posts.",
                 null,
-                message
+                message,
+                history
             )
         );
     } catch (error) {
@@ -2743,6 +2839,8 @@ interface ActivityEntry {
 interface Metrics {
     totalEvents: number;
     toolsExecuted: number;
+    commandsRouted: number;
+    llmFallbacks: number;
     postsGenerated: number;
     recordingsProcessed: number;
     articlesPublished: number;
@@ -2754,12 +2852,17 @@ const TYPE_LABELS: Record<string, { icon: string; label: string }> = {
     article_generated: { icon: "✨", label: "Blog post generated" },
     article_published: { icon: "📰", label: "Article published" },
     mcp_tool_executed: { icon: "⚙️", label: "Tool executed" },
+    command_routed: { icon: "🧭", label: "Command routed" },
+    llm_fallback_used: { icon: "🛟", label: "LLM fallback used" },
+    tool_response_summarized: { icon: "🧠", label: "Tool response summarized" },
 };
 
 function computeMetrics(activities: ActivityEntry[]): Metrics {
     return {
         totalEvents: activities.length,
         toolsExecuted: activities.filter((a) => a.type === "mcp_tool_executed").length,
+        commandsRouted: activities.filter((a) => a.type === "command_routed").length,
+        llmFallbacks: activities.filter((a) => a.type === "llm_fallback_used").length,
         postsGenerated: activities.filter((a) => a.type === "article_generated").length,
         recordingsProcessed: activities.filter((a) => a.type === "audio_uploaded").length,
         articlesPublished: activities.filter((a) => a.type === "article_published").length,
@@ -2828,10 +2931,12 @@ export default function ActivityDashboard() {
             {/* Metrics summary */}
             {!loading && activities.length > 0 && (
                 <div
-                    className="grid grid-cols-2 md:grid-cols-4 gap-3 px-5 py-4"
+                    className="grid grid-cols-2 md:grid-cols-3 gap-3 px-5 py-4"
                     style={{ borderBottom: "1px solid var(--ink-border)" }}
                 >
                     <MetricCard label="Tools Executed" value={metrics.toolsExecuted} icon="⚙️" />
+                    <MetricCard label="Commands Routed" value={metrics.commandsRouted} icon="🧭" />
+                    <MetricCard label="LLM Fallbacks" value={metrics.llmFallbacks} icon="🛟" />
                     <MetricCard label="Posts Generated" value={metrics.postsGenerated} icon="✨" />
                     <MetricCard label="Recordings" value={metrics.recordingsProcessed} icon="🎙️" />
                     <MetricCard label="Published" value={metrics.articlesPublished} icon="📰" />
@@ -3122,6 +3227,35 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
         sendMessage(text);
     };
 
+    const renderStarterPrompts = ({ compact }: { compact: boolean }) => (
+        <div className={`flex flex-wrap ${compact ? "gap-2 mb-1" : "gap-3 justify-center"}`}>
+            {SUGGESTIONS.map((prompt) => (
+                <button
+                    key={`${compact ? "compact" : "hero"}-${prompt}`}
+                    onClick={() => handleSend(prompt)}
+                    className={`pill-button-outline ${compact ? "text-xs py-1.5 px-3 bg-white" : "text-sm py-2 px-5"}`}
+                    style={{
+                        borderRadius: "999px",
+                        ...(compact
+                            ? { fontSize: "0.75rem", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }
+                            : {}),
+                    }}
+                >
+                    {prompt}
+                </button>
+            ))}
+        </div>
+    );
+
+    const lastAssistantIndex = (() => {
+        for (let i = messages.length - 1; i >= 0; i--) {
+            if (messages[i].role === "assistant") return i;
+        }
+        return -1;
+    })();
+
+    const conversationContinued = messages.length > 0 && messages[messages.length - 1].role === "user";
+
     return (
         <div
             className="w-full flex-1 flex flex-col relative"
@@ -3161,23 +3295,12 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
                             Ask me anything to get started.
                         </p>
 
-                        <div className="flex gap-3 flex-wrap justify-center">
-                            {SUGGESTIONS.map((prompt) => (
-                                <button
-                                    key={prompt}
-                                    onClick={() => handleSend(prompt)}
-                                    className="pill-button-outline text-sm py-2 px-5"
-                                    style={{ borderRadius: "999px" }}
-                                >
-                                    {prompt}
-                                </button>
-                            ))}
-                        </div>
+                        {renderStarterPrompts({ compact: false })}
                     </div>
                 )}
 
                 {/* Chat messages */}
-                {messages.map((msg) => (
+                {messages.map((msg, index) => (
                     <div
                         key={msg.id}
                         className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
@@ -3196,14 +3319,18 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
                                 {renderMarkdown(msg.content)}
                             </div>
 
-                            {msg.role === "assistant" && msg.suggestedActions && msg.suggestedActions.length > 0 && (
-                                <div className="flex flex-wrap gap-2 mt-2 pl-1">
+                            {msg.role === "assistant" &&
+                                index === lastAssistantIndex &&
+                                !conversationContinued &&
+                                msg.suggestedActions &&
+                                msg.suggestedActions.length > 0 && (
+                                <div className="flex flex-wrap gap-1.5 mt-2 pl-1">
                                     {msg.suggestedActions.slice(0, 3).map((suggestion) => (
                                         <button
                                             key={`${msg.id}-${suggestion}`}
                                             onClick={() => handleSend(suggestion)}
-                                            className="pill-button-outline text-xs py-1.5 px-3"
-                                            style={{ borderRadius: "999px" }}
+                                            className="pill-button-outline text-xs py-1 px-2.5 leading-5"
+                                            style={{ borderRadius: "999px", maxWidth: "100%" }}
                                             disabled={isLoading}
                                         >
                                             {suggestion}
@@ -3237,18 +3364,7 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
             <div className="absolute bottom-4 left-0 right-0 px-4 md:px-8 pointer-events-none">
                 <div className="max-w-4xl mx-auto flex flex-col gap-2 pointer-events-auto">
                     {!isEmpty && (
-                        <div className="flex gap-2 flex-wrap mb-1">
-                            {SUGGESTIONS.map((prompt) => (
-                                <button
-                                    key={prompt}
-                                    onClick={() => handleSend(prompt)}
-                                    className="pill-button-outline text-xs py-1.5 px-3 bg-white"
-                                    style={{ borderRadius: "999px", fontSize: "0.75rem", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}
-                                >
-                                    {prompt}
-                                </button>
-                            ))}
-                        </div>
+                        renderStarterPrompts({ compact: true })
                     )}
 
                     <div
@@ -3445,6 +3561,22 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
+    const appendAssistantMessage = useCallback(
+        (content: string, suggestedActions?: string[]) => {
+            setMessages((prev) => [
+                ...prev,
+                {
+                    id: (Date.now() + 1).toString(),
+                    role: "assistant",
+                    content,
+                    timestamp: new Date(),
+                    suggestedActions,
+                },
+            ]);
+        },
+        []
+    );
+
     const sendMessage = useCallback(
         async (text?: string) => {
             const content = text || input.trim();
@@ -3483,19 +3615,12 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
                 });
                 const data: ChatResponse = await response.json();
 
-                setMessages((prev) => [
-                    ...prev,
-                    {
-                        id: (Date.now() + 1).toString(),
-                        role: "assistant",
-                        content:
-                            data.reply ||
-                            data.message ||
-                            "I'm not sure how to respond to that. Try saying \"help\" to see what I can do.",
-                        timestamp: new Date(),
-                        suggestedActions: data.suggestedActions?.slice(0, 3),
-                    },
-                ]);
+                appendAssistantMessage(
+                    data.reply ||
+                        data.message ||
+                        "I'm not sure how to respond to that. Try saying \"help\" to see what I can do.",
+                    data.suggestedActions?.slice(0, 3)
+                );
 
                 if (data.action && onAction) {
                     onAction(data.action);
@@ -3503,20 +3628,12 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
 
                 return data as ChatResponse;
             } catch {
-                setMessages((prev) => [
-                    ...prev,
-                    {
-                        id: (Date.now() + 1).toString(),
-                        role: "assistant",
-                        content: "Something went wrong. Please try again.",
-                        timestamp: new Date(),
-                    },
-                ]);
+                appendAssistantMessage("Something went wrong. Please try again.");
             } finally {
                 setIsLoading(false);
             }
         },
-        [input, isLoading, hasNotified, messages, onFirstMessage, onAction]
+        [input, isLoading, hasNotified, messages, onFirstMessage, onAction, appendAssistantMessage]
     );
 
     const handleKeyDown = useCallback(
@@ -3587,7 +3704,10 @@ export type ActivityType =
     | "transcription_completed"
     | "article_generated"
     | "article_published"
-    | "mcp_tool_executed";
+    | "mcp_tool_executed"
+    | "command_routed"
+    | "llm_fallback_used"
+    | "tool_response_summarized";
 
 export interface ActivityEntry {
     id: string;
@@ -3599,6 +3719,43 @@ export interface ActivityEntry {
 const LOG_DIR = path.join(process.cwd(), "logs");
 const LOG_FILE = path.join(LOG_DIR, "activity.json");
 const MAX_ENTRIES = 500;
+
+const REDACTED_METADATA_KEYS = [
+    "message",
+    "content",
+    "query",
+    "prompt",
+    "input",
+    "text",
+];
+
+function sanitizeMetadata(metadata: Record<string, unknown>): Record<string, unknown> {
+    const output: Record<string, unknown> = {};
+
+    for (const [key, value] of Object.entries(metadata)) {
+        const lowerKey = key.toLowerCase();
+        if (REDACTED_METADATA_KEYS.some((k) => lowerKey.includes(k))) {
+            output[key] = "[redacted]";
+            continue;
+        }
+
+        if (typeof value === "string") {
+            output[key] = value.slice(0, 120);
+        } else if (
+            typeof value === "number" ||
+            typeof value === "boolean" ||
+            value === null
+        ) {
+            output[key] = value;
+        } else if (Array.isArray(value)) {
+            output[key] = `[array:${value.length}]`;
+        } else if (typeof value === "object") {
+            output[key] = "[object]";
+        }
+    }
+
+    return output;
+}
 
 /**
  * Read the log file from disk.
@@ -3638,7 +3795,7 @@ export function logActivity(
         id: `act_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
         type,
         timestamp: new Date().toISOString(),
-        metadata,
+        metadata: sanitizeMetadata(metadata),
     };
 
     const log = readLog();
@@ -3733,10 +3890,34 @@ import { sessionState } from "@/lib/mcp/session";
 export interface CommandResult {
     reply: string;
     action?: string;
-    handled: boolean;
 }
 
-export async function routeCommand(message: string): Promise<CommandResult> {
+const PROCESS_COMMAND_PREFIXES = [
+    "process latest recording",
+    "process recording",
+    "process the latest recording",
+];
+
+const PUBLISH_COMMAND_PREFIXES = [
+    "publish draft",
+    "publish the draft",
+    "publish latest draft",
+];
+
+const HELP_COMMAND_PREFIXES = [
+    "help",
+    "what is this",
+    "about this",
+    "what can you do",
+];
+
+const GREETING_PREFIXES = ["hi", "hey", "hello", "yo", "sup"];
+
+function startsWithAny(input: string, prefixes: string[]): boolean {
+    return prefixes.some((prefix) => input.startsWith(prefix));
+}
+
+export async function routeCommand(message: string): Promise<CommandResult | null> {
     const lower = message.toLowerCase().trim();
 
     // Hidden admin access
@@ -3744,25 +3925,22 @@ export async function routeCommand(message: string): Promise<CommandResult> {
         return {
             reply: "Opening admin studio...",
             action: "open_admin_studio",
-            handled: true,
         };
     }
 
     // Process latest recording
-    if (lower.includes("process") && (lower.includes("recording") || lower.includes("latest"))) {
+    if (startsWithAny(lower, PROCESS_COMMAND_PREFIXES)) {
         return {
             reply: "I'll process the latest recording. This will transcribe the audio and generate a blog post from it. (Requires OPENAI_API_KEY to be configured.)",
             action: "process_recording",
-            handled: true,
         };
     }
 
     // Publish draft
-    if (lower.includes("publish") && lower.includes("draft")) {
+    if (startsWithAny(lower, PUBLISH_COMMAND_PREFIXES)) {
         return {
             reply: "I'll publish the latest draft post. Let me check what's available...",
             action: "publish_draft",
-            handled: true,
         };
     }
 
@@ -3776,37 +3954,30 @@ export async function routeCommand(message: string): Promise<CommandResult> {
             return {
                 reply: `Opening: ${post.title}\n/blog/${post.slug}`,
                 action: `open_post:/blog/${post.slug}`,
-                handled: true,
             };
         } else {
             return {
                 reply: `I couldn't find that post number. Try "show recent posts".`,
-                handled: true,
             };
         }
     }
 
     // Help
-    if (lower.includes("what is this") || lower.includes("about this") || lower.includes("help")) {
+    if (startsWithAny(lower, HELP_COMMAND_PREFIXES)) {
         return {
             reply: "This is a **Conversational AI Publishing Platform**. Here's what I can do:\n\n• **Show recent posts** — List the latest blog posts\n• **Process latest recording** — Transcribe audio and generate a post\n• **Publish draft** — Publish a draft blog post\n• **Search posts** — Search blog posts by keyword\n\nJust type a command naturally!",
-            handled: true,
         };
     }
 
     // Greetings
-    if (lower.match(/^(hi|hey|hello|yo|sup)\b/)) {
+    if (startsWithAny(lower, GREETING_PREFIXES)) {
         return {
             reply: "Hey! 👋 I'm your AI publishing assistant. Try asking me to \"show recent posts\" or say \"help\" to see what I can do.",
-            handled: true,
         };
     }
 
-    // Default
-    return {
-        reply: `I'm not quite sure how to handle a command like that yet. But I'm great at these things:\n\n• **Show recent posts**\n• **Search posts**\n• **Publish draft**\n\nSay **help** to see available commands, or tell me what you'd like to explore.`,
-        handled: false,
-    };
+    // Let conversational requests flow to the LLM.
+    return null;
 }
 
 ```

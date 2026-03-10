@@ -66,6 +66,22 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
+    const appendAssistantMessage = useCallback(
+        (content: string, suggestedActions?: string[]) => {
+            setMessages((prev) => [
+                ...prev,
+                {
+                    id: (Date.now() + 1).toString(),
+                    role: "assistant",
+                    content,
+                    timestamp: new Date(),
+                    suggestedActions,
+                },
+            ]);
+        },
+        []
+    );
+
     const sendMessage = useCallback(
         async (text?: string) => {
             const content = text || input.trim();
@@ -104,19 +120,12 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
                 });
                 const data: ChatResponse = await response.json();
 
-                setMessages((prev) => [
-                    ...prev,
-                    {
-                        id: (Date.now() + 1).toString(),
-                        role: "assistant",
-                        content:
-                            data.reply ||
-                            data.message ||
-                            "I'm not sure how to respond to that. Try saying \"help\" to see what I can do.",
-                        timestamp: new Date(),
-                        suggestedActions: data.suggestedActions?.slice(0, 3),
-                    },
-                ]);
+                appendAssistantMessage(
+                    data.reply ||
+                        data.message ||
+                        "I'm not sure how to respond to that. Try saying \"help\" to see what I can do.",
+                    data.suggestedActions?.slice(0, 3)
+                );
 
                 if (data.action && onAction) {
                     onAction(data.action);
@@ -124,20 +133,12 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
 
                 return data as ChatResponse;
             } catch {
-                setMessages((prev) => [
-                    ...prev,
-                    {
-                        id: (Date.now() + 1).toString(),
-                        role: "assistant",
-                        content: "Something went wrong. Please try again.",
-                        timestamp: new Date(),
-                    },
-                ]);
+                appendAssistantMessage("Something went wrong. Please try again.");
             } finally {
                 setIsLoading(false);
             }
         },
-        [input, isLoading, hasNotified, messages, onFirstMessage, onAction]
+        [input, isLoading, hasNotified, messages, onFirstMessage, onAction, appendAssistantMessage]
     );
 
     const handleKeyDown = useCallback(
