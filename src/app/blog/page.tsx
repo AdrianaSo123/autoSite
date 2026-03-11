@@ -19,7 +19,7 @@ export default function BlogPage() {
                 </div>
                 <h1
                     className="text-4xl font-semibold mb-3"
-                    style={{ fontFamily: "'Playfair Display', serif", color: 'var(--ink)' }}
+                    style={{ fontFamily: "var(--font-heading)", color: 'var(--ink)' }}
                 >
                     Blog
                 </h1>
