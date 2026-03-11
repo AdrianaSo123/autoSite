@@ -65,8 +65,8 @@ export async function routeCommand(message: string): Promise<CommandResult | nul
         };
     }
 
-    // Open post by number
-    const openMatch = lower.match(/^open\s+(?:post\s+)?(\d+)$/);
+    // Open post by reference (number or natural phrase)
+    const openMatch = lower.match(/^open\s+(?:post\s*)?(?:#\s*)?(\d+)[\s.!?]*$/);
     if (openMatch) {
         const index = parseInt(openMatch[1], 10);
         const post = sessionState.lastPostResults[index - 1];
@@ -81,6 +81,35 @@ export async function routeCommand(message: string): Promise<CommandResult | nul
                 reply: `I couldn't find that post number. Try "show recent posts".`,
             };
         }
+    }
+
+    // Natural references to latest item in current results context
+    if (/^open\s+(?:the\s+)?(?:latest|newest|first|that|this)\s+post[\s.!?]*$/.test(lower)) {
+        const post = sessionState.lastPostResults[0];
+        if (post) {
+            return {
+                reply: `Opening: ${post.title}\n/blog/${post.slug}`,
+                action: `open_post:/blog/${post.slug}`,
+            };
+        }
+
+        return {
+            reply: `I don't have a recent post list yet. Try "show recent blog posts" first.`,
+        };
+    }
+
+    // Related AI topics — conversational overview, not a blog search
+    if (/related\s+ai\s+topics?|show\s+related\s+topics?/.test(lower)) {
+        return {
+            reply:
+                "Here are some core AI topics worth exploring:\n\n" +
+                "• **Agentic AI** — systems that plan and take multi-step actions autonomously\n" +
+                "• **Large Language Models (LLMs)** — foundation models like GPT that power conversational AI\n" +
+                "• **Retrieval-Augmented Generation (RAG)** — grounding AI responses with real documents\n" +
+                "• **Model Evaluation** — benchmarking reasoning, accuracy, and safety\n" +
+                "• **AI Agents & Tool Use** — AI that calls APIs and uses external tools\n\n" +
+                "Want me to search for blog posts on any of these?",
+        };
     }
 
     // Help

@@ -3,6 +3,7 @@ import { routeCommand } from "@/lib/commands";
 import { routeToTool } from "@/lib/mcp/tool-router";
 import { auth } from "@/lib/auth";
 import { logActivity } from "@/lib/activity-log";
+import { sessionState } from "@/lib/mcp/session";
 
 type IncomingMessage = {
     role: "user" | "assistant";
@@ -25,6 +26,8 @@ type ChatApiResponse = {
     suggestedActions?: string[];
 };
 
+type SuggestionContext = "blog_results" | "concept" | "general";
+
 const PRIMARY_MODEL = "gpt-4.1";
 const FALLBACK_MODEL = "gpt-4o";
 const MAX_HISTORY_MESSAGES = 20;
@@ -39,54 +42,74 @@ const SYSTEM_PROMPT =
     "When sharing tool-derived information, present it as a concise, readable summary. " +
     "Be concise, clear, and practical.";
 
-function buildSuggestions(message: string, reply: string, history: IncomingMessage[] = []): string[] {
+function buildLocalFallbackReply(message: string, _history: IncomingMessage[]): string {
+    const lower = message.toLowerCase();
+
+    if (/(latest|recent|new|newest)\s+(post|posts|article|articles)/.test(lower)) {
+        return "I can help with that right now. Try: **Show recent blog posts** and then **open 1** to jump into the latest article.";
+    }
+
+    if (/(search|find|posts?\s+about|blog\s+about|articles?\s+(on|about))/.test(lower) && /(post|posts|blog|article)/.test(lower)) {
+        return "I can help you find that. Try phrasing it as **search posts for AI agents** or **search posts for model evaluation**.";
+    }
+
+    if (/\b(explain|what is|how does|simplify|simpler|real.world examples?|give.*examples?)\b/.test(lower)) {
+        return "To answer follow-up questions I need a live LLM connection. Make sure `OPENAI_API_KEY` is set in `.env.local` and restart the dev server.";
+    }
+
+    if (/\b(trend|trending|latest in|new in|recent in)\b/.test(lower)) {
+        return "For live AI trend questions I need an LLM connection. You can also try **search posts for AI** to browse published posts.";
+    }
+
+    return "I can help with blog discovery and AI topics. Ask me to **show recent blog posts**, **search posts about a topic**, or **explain an AI concept**.";
+}
+
+function inferSuggestionContext(message: string, reply: string): SuggestionContext {
     const messageLower = message.toLowerCase();
     const replyLower = reply.toLowerCase();
-    const historyText = history
-        .slice(-6)
-        .map((m) => m.content.toLowerCase())
-        .join(" ");
-    const contextText = `${messageLower} ${historyText}`;
 
-    const looksLikeBlogResponse =
+    if (
         /\/blog\//.test(replyLower) ||
         /recent posts|found\s+\d+\s+post|blog summary|post\(s\)|\d+\.\s+.+\/blog\//.test(replyLower) ||
-        /(blog|post|article)/.test(contextText);
+        /(blog|post|article)/.test(messageLower)
+    ) {
+        return "blog_results";
+    }
 
-    const looksLikeConceptResponse =
-        /(explain|what is|how does|concept|difference|agentic|ai|llm|model)/.test(contextText) &&
-        !looksLikeBlogResponse;
+    if (/(explain|what is|how does|concept|difference|agentic|ai|llm|model)/.test(messageLower)) {
+        return "concept";
+    }
 
-    const looksGeneralQuestion =
-        /(what|why|how|should|can|could|would)/.test(contextText) &&
-        !looksLikeBlogResponse &&
-        !looksLikeConceptResponse;
+    return "general";
+}
+
+function buildSuggestions(
+    message: string,
+    reply: string,
+    context: SuggestionContext = inferSuggestionContext(message, reply)
+): string[] {
+    const messageLower = message.toLowerCase();
 
     let candidates: string[];
 
-    if (looksLikeBlogResponse) {
-        candidates = [
-            "Summarize the newest post",
-            "Show related AI topics",
-            "Explain this concept simply",
-        ];
-    } else if (looksLikeConceptResponse) {
+    if (context === "blog_results") {
+        const postCount = sessionState.lastPostResults.length;
+        candidates = postCount >= 3
+            ? ["Open post 1", "Open post 2", "Open post 3"]
+            : postCount === 2
+            ? ["Open post 1", "Open post 2", "Summarize the newest post"]
+            : ["Open post 1", "Summarize the newest post", "Show related AI topics"];
+    } else if (context === "concept") {
         candidates = [
             "Show blog posts about this",
             "Give real-world examples",
             "Explain this more simply",
         ];
-    } else if (looksGeneralQuestion) {
-        candidates = [
-            "Show recent blog posts",
-            "Show related AI topics",
-            "Give a practical next step",
-        ];
     } else {
         candidates = [
             "Show recent blog posts",
             "Show related AI topics",
-            "Explain this concept simply",
+            "Give a practical next step",
         ];
     }
 
@@ -103,10 +126,11 @@ function toResponse(
     reply: string,
     action: string | null = null,
     messageForSuggestions?: string,
-    historyForSuggestions: IncomingMessage[] = []
+    _historyForSuggestions: IncomingMessage[] = [],
+    suggestionContext?: SuggestionContext
 ): ChatApiResponse {
     const suggestedActions = messageForSuggestions
-        ? buildSuggestions(messageForSuggestions, reply, historyForSuggestions)
+        ? buildSuggestions(messageForSuggestions, reply, suggestionContext)
         : [];
 
     return {
@@ -213,7 +237,21 @@ export async function POST(request: NextRequest) {
         const session = await auth();
         const isAdmin = !!session?.user;
 
-        // 1. Try MCP tool routing (keyword + LLM)
+        // 1. Command router first — deterministic, highest priority
+        const result = await routeCommand(message);
+
+        if (result) {
+            logActivity("command_routed", {
+                route: "chat_api",
+                action: result.action || "none",
+            });
+            const suggestionSource = result.action ? undefined : message;
+            return NextResponse.json(
+                toResponse(result.reply, result.action || null, suggestionSource, history)
+            );
+        }
+
+        // 2. MCP tool routing (blog search, post listing)
         let toolResult = "";
         try {
             toolResult = await routeToTool(message, isAdmin);
@@ -235,31 +273,18 @@ export async function POST(request: NextRequest) {
                 logActivity("tool_response_summarized", { route: "chat_api" });
             }
 
-            return NextResponse.json(toResponse(reply, "agent_tool_call", message, history));
-        }
-
-        // 2. Fall back to command router (greetings, help, admin, actions)
-        const result = await routeCommand(message);
-
-        if (result) {
-            logActivity("command_routed", {
-                route: "chat_api",
-                action: result.action || "none",
-            });
-            const suggestionSource = result.action ? undefined : message;
-            return NextResponse.json(
-                toResponse(result.reply, result.action || null, suggestionSource, history)
-            );
+            return NextResponse.json(toResponse(reply, "agent_tool_call", message, history, "blog_results"));
         }
 
         // 3. LLM assistant response with system prompt + multi-turn history
         if (!process.env.OPENAI_API_KEY) {
             return NextResponse.json(
                 toResponse(
-                    "I can help with blog discovery and AI topics. Try asking for recent posts or an explanation of a concept.",
+                    buildLocalFallbackReply(message, history),
                     null,
                     message,
-                    history
+                    history,
+                    inferSuggestionContext(message, buildLocalFallbackReply(message, history))
                 )
             );
         }
@@ -282,7 +307,12 @@ export async function POST(request: NextRequest) {
                     "I hit a temporary model issue. Please try again, or ask me to show recent posts.",
                 null,
                 message,
-                history
+                history,
+                inferSuggestionContext(
+                    message,
+                    reply ||
+                        "I hit a temporary model issue. Please try again, or ask me to show recent posts."
+                )
             )
         );
     } catch (error) {

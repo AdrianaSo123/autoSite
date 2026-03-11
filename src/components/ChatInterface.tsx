@@ -156,7 +156,7 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
             data-testid="chat-container"
         >
             {/* Messages area */}
-            <div className="flex-1 overflow-y-auto px-2 md:px-8 pb-32 space-y-6">
+            <div className="flex-1 overflow-y-auto px-2 md:px-8 pb-40 space-y-6">
                 {/* Hero welcome */}
                 {isEmpty && (
                     <div className="flex flex-col items-center justify-center h-full text-center py-16">
@@ -271,10 +271,6 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
                 }}
             >
                 <div className="max-w-4xl mx-auto flex flex-col gap-2 pointer-events-auto">
-                    {!isEmpty && (
-                        renderStarterPrompts({ compact: true })
-                    )}
-
                     <div
                         className="p-2 pl-4 flex gap-3 shadow-lg rounded-full"
                         style={{

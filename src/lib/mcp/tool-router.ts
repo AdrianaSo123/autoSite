@@ -37,8 +37,15 @@ export async function routeToTool(
     // 0. Blog-intent fast path for natural requests
     if (containsBlogIntent(lower)) {
         const recentTool = tools.find((t) => t.name === "listRecentPosts");
-        if (recentTool && /(recent|latest|new|newest|what have you written)/.test(lower)) {
+        if (recentTool && /(recent|latest|new|newest|what have you written)/.test(lower) && !/summarize/.test(lower)) {
             return recentTool.execute();
+        }
+
+        const summarizeTool = tools.find((t) => t.name === "summarizePost");
+        if (summarizeTool && /summarize/.test(lower)) {
+            const numMatch = lower.match(/summarize\s+post\s*#?\s*(\d+)/i);
+            const index = numMatch ? parseInt(numMatch[1], 10) - 1 : 0;
+            return summarizeTool.execute({ index });
         }
 
         const searchTool = tools.find((t) => t.name === "searchBlogPosts");
@@ -48,8 +55,19 @@ export async function routeToTool(
                 .replace(/articles? on/gi, "")
                 .replace(/blog about/gi, "")
                 .replace(/posts? about/gi, "")
+                .replace(/show blog posts?/gi, "")
+                .replace(/show posts?/gi, "")
                 .trim();
-            return searchTool.execute({ query: cleaned || message });
+
+            // Skip if only pronouns/noise remain — let LLM resolve using conversation context
+            const NOISE = new Set(["show", "blog", "post", "posts", "about", "find",
+                "search", "this", "that", "it", "these", "those", "the", "a", "an"]);
+            const meaningfulWords = cleaned.split(/\s+/).filter(
+                (w) => w.length >= 2 && !NOISE.has(w)
+            );
+            if (meaningfulWords.length === 0) return "";
+
+            return searchTool.execute({ query: meaningfulWords.join(" ") });
         }
     }
 
@@ -60,8 +78,13 @@ export async function routeToTool(
         }
     }
 
-    // 2. LLM fallback — only when API key is available
+    // 2. LLM fallback — only for explicit data-retrieval requests, not conversational follow-ups
     if (process.env.OPENAI_API_KEY) {
+        // Skip tool selection for conversational messages (follow-ups, concept questions, examples)
+        const isConversational = !containsBlogIntent(lower) &&
+            /\b(explain|give|examples?|simplify|simpler|more about|tell me|why|how|what is|what are|real.?world|elaborate|compare|difference)\b/i.test(lower);
+        if (isConversational) return "";
+
         return llmToolSelection(message, tools);
     }
 
@@ -86,6 +109,11 @@ const KEYWORD_MAP: Record<string, string[]> = {
     getPostSummary: [
         "post summary", "how many posts", "blog summary", "blog stats",
         "post count", "total posts", "overview",
+    ],
+    summarizePost: [
+        "summarize the newest post", "summarize the latest post", "summarize newest post",
+        "summarize latest post", "summarize post 1", "summarize post 2", "summarize post 3",
+        "summarize the first post",
     ],
 };
 
@@ -115,6 +143,10 @@ function extractParams(message: string, toolName: string): Record<string, unknow
         }
         return { query: message };
     }
+    if (toolName === "summarizePost") {
+        const numMatch = message.match(/summarize\s+post\s*#?\s*(\d+)/i);
+        return { index: numMatch ? parseInt(numMatch[1], 10) - 1 : 0 };
+    }
     return {};
 }
 
@@ -139,7 +171,13 @@ async function llmToolSelection(message: string, tools: MCPTool[]): Promise<stri
                 messages: [
                     {
                         role: "system",
-                        content: `You are an AI assistant for a publishing platform. You have access to these tools:\n\n${toolDescriptions}\n\nBased on the user's message, respond with ONLY the tool name to call. If the request is a casual greeting, or completely unrelated to publishing and these tools, return "out_of_scope".`,
+                        content:
+                            `You dispatch user requests to tools for a blog platform.\n\nTOOLS:\n${toolDescriptions}\n\n` +
+                            `RULES:\n` +
+                            `- ONLY call a tool when the user is explicitly asking to LIST, FIND, SEARCH, or SUMMARIZE published blog posts.\n` +
+                            `- Return "out_of_scope" for: follow-up questions, concept explanations, "give examples", "explain more", ` +
+                            `"simplify", "tell me about", greetings, or anything not directly requesting blog content.\n` +
+                            `- Respond with ONLY the tool name or "out_of_scope". No other text.`,
                     },
                     { role: "user", content: message },
                 ],
@@ -159,14 +197,13 @@ async function llmToolSelection(message: string, tools: MCPTool[]): Promise<stri
             }
         }
 
-        // If we reach here, the LLM determined it's off-topic or no tool matched.
-        return "I'm a dedicated publishing assistant, so I don't know much about that! But I can help you **Show recent posts**, **Search posts**, or **Publish a draft**.";
+        // out_of_scope or no matching tool — let the main LLM handle it as conversation
+        return "";
 
     } catch (error) {
         console.error("LLM tool selection error:", error);
-        return "⚠️ I had trouble processing that request. Please try your search again.";
+        return "";
     }
 
-    // Default fallback (though the catch or out_of_scope block usually returns first)
     return "";
 }

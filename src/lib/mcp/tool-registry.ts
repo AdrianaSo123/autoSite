@@ -92,6 +92,39 @@ export const toolRegistry: MCPTool[] = [
                 return `📊 **Blog Summary**\n\n• Total posts: **${posts.length}**\n• Newest: ${newest}\n• Oldest: ${oldest}`;
             }, "getPostSummary"),
     },
+    {
+        name: "summarizePost",
+        description: "Return the full content of a specific post from recent results so it can be summarized.",
+        access: "public",
+        execute: (params) =>
+            safeExecute(async () => {
+                const index = typeof params?.index === "number" ? params.index : 0;
+                let postRef = sessionState.lastPostResults[index];
+
+                // Auto-load posts if session is empty
+                if (!postRef) {
+                    const allPosts = getAllPosts();
+                    if (allPosts.length === 0) return "No posts available yet.";
+                    const topPosts = allPosts.slice(0, 5);
+                    sessionState.lastPostResults = topPosts.map((p) => ({
+                        title: p.title,
+                        slug: p.slug,
+                        date: p.date,
+                    }));
+                    postRef = sessionState.lastPostResults[index];
+                }
+
+                if (!postRef) {
+                    return `Only ${sessionState.lastPostResults.length} post(s) available. Try a lower number.`;
+                }
+
+                const allPosts = getAllPosts();
+                const post = allPosts.find((p) => p.slug === postRef.slug);
+                if (!post) return `Could not load content for "${postRef.title}".`;
+                const content = post.content?.slice(0, 3000).trim() ?? post.excerpt;
+                return `📄 **${post.title}** (${post.date})\n\n${content}\n\n[Read full post →](/blog/${post.slug})`;
+            }, "summarizePost"),
+    },
 ];
 
 // ---------------------------------------------------------------------------
