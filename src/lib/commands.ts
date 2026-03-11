@@ -73,7 +73,7 @@ export async function routeCommand(message: string): Promise<CommandResult | nul
 
         if (post) {
             return {
-                reply: `Opening: ${post.title}\n/blog/${post.slug}`,
+                reply: `Opening: ${post.title}`,
                 action: `open_post:/blog/${post.slug}`,
             };
         } else {
@@ -83,12 +83,31 @@ export async function routeCommand(message: string): Promise<CommandResult | nul
         }
     }
 
+    // Open post by title (e.g. Open "Some Post Title")
+    const openTitleMatch = lower.match(/^open\s+"(.+)"[\s.!?]*$/);
+    if (openTitleMatch) {
+        const titleQuery = openTitleMatch[1].toLowerCase();
+        const post = sessionState.lastPostResults.find(
+            (p) => p.title.toLowerCase() === titleQuery
+        );
+        if (post) {
+            return {
+                reply: `Opening: ${post.title}`,
+                action: `open_post:/blog/${post.slug}`,
+            };
+        } else {
+            return {
+                reply: `I couldn't find a post matching that title. Try "show recent posts" to see what's available.`,
+            };
+        }
+    }
+
     // Natural references to latest item in current results context
     if (/^open\s+(?:the\s+)?(?:latest|newest|first|that|this)\s+post[\s.!?]*$/.test(lower)) {
         const post = sessionState.lastPostResults[0];
         if (post) {
             return {
-                reply: `Opening: ${post.title}\n/blog/${post.slug}`,
+                reply: `Opening: ${post.title}`,
                 action: `open_post:/blog/${post.slug}`,
             };
         }

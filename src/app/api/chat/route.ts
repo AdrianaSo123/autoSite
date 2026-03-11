@@ -26,7 +26,7 @@ type ChatApiResponse = {
     suggestedActions?: string[];
 };
 
-type SuggestionContext = "blog_results" | "concept" | "general";
+type SuggestionContext = "blog_results" | "concept" | "about_studio" | "general";
 
 const PRIMARY_MODEL = "gpt-4.1";
 const FALLBACK_MODEL = "gpt-4o";
@@ -70,15 +70,26 @@ function inferSuggestionContext(message: string, reply: string): SuggestionConte
     const messageLower = message.toLowerCase();
     const replyLower = reply.toLowerCase();
 
+    const hasFetchedPosts = sessionState.lastPostResults.length > 0;
+
     if (
-        /\/blog\//.test(replyLower) ||
-        /recent posts|found\s+\d+\s+post|blog summary|post\(s\)|\d+\.\s+.+\/blog\//.test(replyLower) ||
-        /(blog|post|article)/.test(messageLower)
+        hasFetchedPosts &&
+        (
+            /\/blog\//.test(replyLower) ||
+            /recent posts|found\s+\d+\s+post|blog summary|post\(s\)|\d+\.\s+.+\/blog\//.test(replyLower)
+        )
     ) {
         return "blog_results";
     }
 
-    if (/(explain|what is|how does|concept|difference|agentic|ai|llm|model)/.test(messageLower)) {
+    // Studio / platform questions
+    if (/\b(studio|platform|this site|this app|this tool|what can you do|what do you do|who are you|what is so studio)\b/.test(messageLower)) {
+        return "about_studio";
+    }
+
+    // AI/tech concept questions — require an actual technical term alongside the question word
+    const hasTechTerm = /(agentic|llm|model|rag|transformer|embedding|inference|fine.?tun|agent|vector|neural|diffusion|token|prompt|gpt|claude|gemini|ai|machine learning|deep learning|automation)/.test(messageLower);
+    if (hasTechTerm && /(explain|what is|what are|how does|how do|difference|why does|why is|simplify|compare)/.test(messageLower)) {
         return "concept";
     }
 
@@ -95,12 +106,26 @@ function buildSuggestions(
     let candidates: string[];
 
     if (context === "blog_results") {
-        const postCount = sessionState.lastPostResults.length;
-        candidates = postCount >= 3
-            ? ["Open post 1", "Open post 2", "Open post 3"]
-            : postCount === 2
-            ? ["Open post 1", "Open post 2", "Summarize the newest post"]
-            : ["Open post 1", "Summarize the newest post", "Show related AI topics"];
+        const posts = sessionState.lastPostResults;
+        const postCount = posts.length;
+        const openActions = posts
+            .slice(0, 3)
+            .map((p) => `Open "${p.title}"`);
+        if (postCount >= 3) {
+            candidates = openActions;
+        } else if (postCount === 2) {
+            candidates = [...openActions, "Summarize the newest post"];
+        } else if (postCount === 1) {
+            candidates = [...openActions, "Summarize this post", "Show related AI topics"];
+        } else {
+            candidates = ["Show recent blog posts", "Search posts about AI", "Explain an AI concept"];
+        }
+    } else if (context === "about_studio") {
+        candidates = [
+            "Show recent blog posts",
+            "Search posts about AI",
+            "What AI topics do you cover?",
+        ];
     } else if (context === "concept") {
         candidates = [
             "Show blog posts about this",

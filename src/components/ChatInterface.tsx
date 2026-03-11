@@ -163,69 +163,85 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
                         {/* Decorative vase — left */}
                         <div className="hidden md:block absolute left-0 top-8 opacity-25 pointer-events-none select-none" style={{ color: "var(--ink)" }}>
                             <svg width="110" height="190" viewBox="0 0 110 190" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ color: "var(--ink)" }}>
-                                {/* Neck rim */}
-                                <ellipse cx="55" cy="18" rx="14" ry="5" stroke="currentColor" strokeWidth="1.2" fill="none"/>
-                                {/* Neck */}
-                                <path d="M41 18 C38 28 35 35 30 50" stroke="currentColor" strokeWidth="1.2" fill="none"/>
-                                <path d="M69 18 C72 28 75 35 80 50" stroke="currentColor" strokeWidth="1.2" fill="none"/>
-                                {/* Shoulder band */}
-                                <path d="M29 52 Q55 44 81 52" stroke="currentColor" strokeWidth="1" fill="none"/>
-                                {/* Body */}
-                                <path d="M30 50 C18 70 14 95 16 118 C18 145 28 165 40 175 C46 179 51 181 55 181 C59 181 64 179 70 175 C82 165 92 145 94 118 C96 95 92 70 80 50 Z" stroke="currentColor" strokeWidth="1.4" fill="none"/>
-                                {/* Central floral circle */}
-                                <circle cx="55" cy="112" r="22" stroke="currentColor" strokeWidth="0.9" fill="none"/>
-                                {/* Flower petals */}
-                                <ellipse cx="55" cy="91" rx="6" ry="11" stroke="currentColor" strokeWidth="0.8" fill="none"/>
-                                <ellipse cx="55" cy="133" rx="6" ry="11" stroke="currentColor" strokeWidth="0.8" fill="none"/>
-                                <ellipse cx="34" cy="112" rx="11" ry="6" stroke="currentColor" strokeWidth="0.8" fill="none"/>
-                                <ellipse cx="76" cy="112" rx="11" ry="6" stroke="currentColor" strokeWidth="0.8" fill="none"/>
-                                <ellipse cx="40" cy="97" rx="7" ry="12" transform="rotate(45 40 97)" stroke="currentColor" strokeWidth="0.7" fill="none"/>
-                                <ellipse cx="70" cy="97" rx="7" ry="12" transform="rotate(-45 70 97)" stroke="currentColor" strokeWidth="0.7" fill="none"/>
-                                <ellipse cx="40" cy="127" rx="7" ry="12" transform="rotate(-45 40 127)" stroke="currentColor" strokeWidth="0.7" fill="none"/>
-                                <ellipse cx="70" cy="127" rx="7" ry="12" transform="rotate(45 70 127)" stroke="currentColor" strokeWidth="0.7" fill="none"/>
-                                {/* Center dot */}
-                                <circle cx="55" cy="112" r="4" stroke="currentColor" strokeWidth="0.8" fill="none"/>
-                                {/* Small leaves on shoulder */}
-                                <path d="M36 62 C32 57 30 52 36 50 C39 53 38 59 36 62Z" stroke="currentColor" strokeWidth="0.8" fill="none"/>
-                                <path d="M74 62 C78 57 80 52 74 50 C71 53 72 59 74 62Z" stroke="currentColor" strokeWidth="0.8" fill="none"/>
-                                {/* Dot row above base */}
-                                <circle cx="44" cy="158" r="1.8" fill="currentColor"/>
-                                <circle cx="55" cy="161" r="1.8" fill="currentColor"/>
-                                <circle cx="66" cy="158" r="1.8" fill="currentColor"/>
-                                {/* Base band */}
-                                <path d="M40 175 Q55 181 70 175" stroke="currentColor" strokeWidth="1" fill="none"/>
-                                <ellipse cx="55" cy="179" rx="15" ry="5" stroke="currentColor" strokeWidth="1" fill="none"/>
+                                {/* Lid knob */}
+                                <ellipse cx="55" cy="9" rx="7" ry="4" stroke="currentColor" strokeWidth="1.1"/>
+                                <path d="M48 9 C46 13 44 16 43 21 M62 9 C64 13 66 16 67 21" stroke="currentColor" strokeWidth="1"/>
+                                {/* Lid rim */}
+                                <ellipse cx="55" cy="21" rx="21" ry="6" stroke="currentColor" strokeWidth="1.2"/>
+                                {/* Body sides */}
+                                <path d="M34 21 L32 168" stroke="currentColor" strokeWidth="1.3"/>
+                                <path d="M76 21 L78 168" stroke="currentColor" strokeWidth="1.3"/>
+                                {/* Top decorative band lower edge */}
+                                <ellipse cx="55" cy="44" rx="22" ry="6" stroke="currentColor" strokeWidth="1"/>
+                                {/* Diamond lattice — SE diagonals */}
+                                <path d="M34 21 L47 44 M40 21 L54 44 M47 21 L61 44 M54 21 L68 44 M62 21 L76 39" stroke="currentColor" strokeWidth="0.65"/>
+                                {/* Diamond lattice — SW diagonals */}
+                                <path d="M76 21 L63 44 M70 21 L56 44 M64 21 L50 44 M57 21 L43 44 M50 21 L34 39" stroke="currentColor" strokeWidth="0.65"/>
+                                {/* Mid section dividers */}
+                                <ellipse cx="55" cy="90" rx="23" ry="6.5" stroke="currentColor" strokeWidth="0.9" strokeDasharray="4 2"/>
+                                <ellipse cx="55" cy="144" rx="23" ry="6.5" stroke="currentColor" strokeWidth="0.9" strokeDasharray="4 2"/>
+                                {/* Diamond medallion frame */}
+                                <path d="M55 97 L77 117 L55 137 L33 117 Z" stroke="currentColor" strokeWidth="1"/>
+                                {/* Center circle */}
+                                <circle cx="55" cy="117" r="6" stroke="currentColor" strokeWidth="0.9"/>
+                                {/* 4 main petals */}
+                                <path d="M55 111 C57 106 61 103 59 97 C54 101 51 107 55 111Z" stroke="currentColor" strokeWidth="0.8"/>
+                                <path d="M55 123 C57 128 61 131 59 137 C54 133 51 127 55 123Z" stroke="currentColor" strokeWidth="0.8"/>
+                                <path d="M49 117 C44 115 41 111 36 113 C38 117 44 120 49 117Z" stroke="currentColor" strokeWidth="0.8"/>
+                                <path d="M61 117 C66 115 69 111 74 113 C72 117 66 120 61 117Z" stroke="currentColor" strokeWidth="0.8"/>
+                                {/* 4 diagonal leaves */}
+                                <path d="M50 108 C47 103 47 98 51 97 C52 102 51 107 50 108Z" stroke="currentColor" strokeWidth="0.7"/>
+                                <path d="M60 108 C63 103 63 98 59 97 C58 102 59 107 60 108Z" stroke="currentColor" strokeWidth="0.7"/>
+                                <path d="M50 126 C47 131 47 136 51 137 C52 132 51 127 50 126Z" stroke="currentColor" strokeWidth="0.7"/>
+                                <path d="M60 126 C63 131 63 136 59 137 C58 132 59 127 60 126Z" stroke="currentColor" strokeWidth="0.7"/>
+                                {/* Bottom band */}
+                                <ellipse cx="55" cy="152" rx="23" ry="6.5" stroke="currentColor" strokeWidth="1"/>
+                                {/* Wave pattern in bottom band */}
+                                <path d="M32 161 C36 157 40 165 44 161 C48 157 52 165 56 161 C60 157 64 165 68 161 C72 157 77 161 78 159" stroke="currentColor" strokeWidth="0.9"/>
+                                {/* Base foot */}
+                                <path d="M32 168 Q55 176 78 168" stroke="currentColor" strokeWidth="1.2"/>
+                                <ellipse cx="55" cy="171" rx="23" ry="7" stroke="currentColor" strokeWidth="1.1"/>
                             </svg>
                         </div>
 
                         {/* Decorative bowls — right */}
                         <div className="hidden md:block absolute right-0 top-16 opacity-25 pointer-events-none select-none" style={{ color: "var(--ink)" }}>
-                            <svg width="90" height="170" viewBox="0 0 90 170" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                {/* Top teacup */}
-                                <path d="M22 20 Q45 13 68 20 Q72 38 70 46 Q56 54 45 54 Q34 54 20 46 Q18 38 22 20Z" stroke="currentColor" strokeWidth="1.2" fill="none"/>
-                                <ellipse cx="45" cy="20" rx="23" ry="7" stroke="currentColor" strokeWidth="1" fill="none"/>
-                                <path d="M25 44 Q45 50 65 44" stroke="currentColor" strokeWidth="0.8" fill="none"/>
-                                <ellipse cx="45" cy="48" rx="20" ry="5" stroke="currentColor" strokeWidth="1" fill="none"/>
-                                {/* Leaf motif on teacup */}
-                                <path d="M38 33 C36 28 40 24 45 26 C50 24 54 28 52 33 C50 38 45 40 45 40 C45 40 40 38 38 33Z" stroke="currentColor" strokeWidth="0.8" fill="none"/>
-                                {/* Handle */}
-                                <path d="M68 26 C76 26 80 30 80 36 C80 42 76 46 68 44" stroke="currentColor" strokeWidth="1" fill="none"/>
+                            <svg width="90" height="172" viewBox="0 0 90 172" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                {/* TOP BOWL (smallest) */}
+                                <ellipse cx="45" cy="13" rx="18" ry="5" stroke="currentColor" strokeWidth="1"/>
+                                <path d="M27 13 C25 22 25 31 27 40 Q45 47 63 40 C65 31 65 22 63 13" stroke="currentColor" strokeWidth="1.2"/>
+                                <ellipse cx="45" cy="42" rx="19" ry="5.5" stroke="currentColor" strokeWidth="1"/>
+                                <path d="M37 42 L36 50 M53 42 L54 50" stroke="currentColor" strokeWidth="1"/>
+                                <ellipse cx="45" cy="50" rx="9" ry="3" stroke="currentColor" strokeWidth="1"/>
+                                {/* Leaf motif */}
+                                <path d="M40 27 C37 22 40 18 44 19 C43 24 41 29 40 27Z" stroke="currentColor" strokeWidth="0.8"/>
+                                <path d="M50 25 C53 20 50 16 46 17 C47 22 49 27 50 25Z" stroke="currentColor" strokeWidth="0.8"/>
+                                <path d="M40 27 L45 23 M50 25 L45 21" stroke="currentColor" strokeWidth="0.6"/>
 
-                                {/* Middle bowl */}
-                                <path d="M15 88 Q45 78 75 88 Q80 108 76 118 Q60 128 45 128 Q30 128 14 118 Q10 108 15 88Z" stroke="currentColor" strokeWidth="1.2" fill="none"/>
-                                <ellipse cx="45" cy="88" rx="30" ry="9" stroke="currentColor" strokeWidth="1" fill="none"/>
-                                <ellipse cx="45" cy="122" rx="26" ry="7" stroke="currentColor" strokeWidth="1" fill="none"/>
-                                {/* Fish motif on bowl */}
-                                <path d="M30 108 C34 100 42 98 45 104 C48 98 56 100 60 108 C56 116 48 114 45 108 C42 114 34 116 30 108Z" stroke="currentColor" strokeWidth="0.8" fill="none"/>
+                                {/* MIDDLE BOWL */}
+                                <ellipse cx="45" cy="67" rx="24" ry="7" stroke="currentColor" strokeWidth="1"/>
+                                <path d="M21 67 C19 79 19 91 21 101 Q45 109 69 101 C71 91 71 79 69 67" stroke="currentColor" strokeWidth="1.2"/>
+                                <ellipse cx="45" cy="103" rx="25" ry="7.5" stroke="currentColor" strokeWidth="1"/>
+                                <path d="M33 103 L33 112 M57 103 L57 112" stroke="currentColor" strokeWidth="1"/>
+                                <ellipse cx="45" cy="112" rx="12" ry="4" stroke="currentColor" strokeWidth="1"/>
+                                {/* Circle + leaf motif */}
+                                <circle cx="45" cy="86" r="5" stroke="currentColor" strokeWidth="0.9"/>
+                                <path d="M37 82 C34 76 37 71 42 73 C41 79 38 84 37 82Z" stroke="currentColor" strokeWidth="0.8"/>
+                                <path d="M53 80 C56 74 53 69 48 71 C49 77 52 82 53 80Z" stroke="currentColor" strokeWidth="0.8"/>
+                                <path d="M37 82 L41 84 M53 80 L49 82" stroke="currentColor" strokeWidth="0.6"/>
 
-                                {/* Small cup at bottom */}
-                                <path d="M26 148 Q45 142 64 148 Q66 158 64 162 Q54 167 45 167 Q36 167 26 162 Q24 158 26 148Z" stroke="currentColor" strokeWidth="1.2" fill="none"/>
-                                <ellipse cx="45" cy="148" rx="19" ry="6" stroke="currentColor" strokeWidth="1" fill="none"/>
-                                <ellipse cx="45" cy="163" rx="16" ry="5" stroke="currentColor" strokeWidth="0.9" fill="none"/>
-                                {/* Dot band on small cup */}
-                                <circle cx="36" cy="156" r="1.5" fill="currentColor"/>
-                                <circle cx="45" cy="157" r="1.5" fill="currentColor"/>
-                                <circle cx="54" cy="156" r="1.5" fill="currentColor"/>
+                                {/* BOTTOM BOWL (largest) */}
+                                <ellipse cx="45" cy="128" rx="29" ry="8" stroke="currentColor" strokeWidth="1"/>
+                                <path d="M16 128 C14 141 14 152 16 160 Q45 168 74 160 C76 152 76 141 74 128" stroke="currentColor" strokeWidth="1.3"/>
+                                <ellipse cx="45" cy="162" rx="30" ry="8" stroke="currentColor" strokeWidth="1"/>
+                                <path d="M30 162 L29 168 M60 162 L61 168" stroke="currentColor" strokeWidth="1.1"/>
+                                <ellipse cx="45" cy="168" rx="15" ry="4.5" stroke="currentColor" strokeWidth="1"/>
+                                {/* Floral motif */}
+                                <circle cx="45" cy="146" r="7" stroke="currentColor" strokeWidth="0.9"/>
+                                <path d="M45 139 C47 134 51 131 49 126 C44 129 41 134 45 139Z" stroke="currentColor" strokeWidth="0.8"/>
+                                <path d="M45 153 C47 158 51 161 49 166 C44 163 41 158 45 153Z" stroke="currentColor" strokeWidth="0.8"/>
+                                <path d="M38 146 C33 144 30 140 35 138 C38 142 38 145 38 146Z" stroke="currentColor" strokeWidth="0.8"/>
+                                <path d="M52 146 C57 144 60 140 55 138 C52 142 52 145 52 146Z" stroke="currentColor" strokeWidth="0.8"/>
                             </svg>
                         </div>
 

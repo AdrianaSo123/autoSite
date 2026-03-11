@@ -50,6 +50,20 @@ interface UseChatReturn {
 // Hook
 // ---------------------------------------------------------------------------
 
+const CHAT_STORAGE_KEY = "so_studio_chat_history";
+
+function loadStoredMessages(): ChatMessage[] {
+    if (typeof window === "undefined") return [];
+    try {
+        const raw = localStorage.getItem(CHAT_STORAGE_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw) as Array<Omit<ChatMessage, "timestamp"> & { timestamp: string }>;
+        return parsed.map((m) => ({ ...m, timestamp: new Date(m.timestamp) }));
+    } catch {
+        return [];
+    }
+}
+
 export function useChat(options: UseChatOptions = {}): UseChatReturn {
     const { welcomeMessage, onFirstMessage, onAction } = options;
 
@@ -61,7 +75,25 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
     const [input, setInput] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [hasNotified, setHasNotified] = useState(false);
+    const [hydrated, setHydrated] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null!);
+
+    // After mount, restore from localStorage (avoids SSR hydration mismatch)
+    useEffect(() => {
+        const stored = loadStoredMessages();
+        if (stored.length > 0) {
+            setMessages(stored);
+        }
+        setHydrated(true);
+    }, []);
+
+    // Persist messages to localStorage whenever they change (only after hydration)
+    useEffect(() => {
+        if (!hydrated) return;
+        if (messages.length > 0) {
+            localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages));
+        }
+    }, [messages, hydrated]);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -179,6 +211,7 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
     }, [isLoading]);
 
     const clearChat = useCallback(() => {
+        localStorage.removeItem(CHAT_STORAGE_KEY);
         setMessages([]);
         setInput("");
         setHasNotified(false);

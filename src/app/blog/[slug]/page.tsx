@@ -41,6 +41,13 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 <span aria-hidden="true">/</span>
                 <span className="truncate max-w-[200px]" aria-current="page">{post.title}</span>
             </nav>
+            <Link
+                href="/"
+                className="inline-flex items-center gap-1.5 text-xs hover:opacity-70 transition-opacity mb-8"
+                style={{ color: 'var(--text-secondary)', fontFamily: "'Inter', sans-serif" }}
+            >
+                ← Back to chat
+            </Link>
             <article>
                 <div className="flex items-center gap-2 mb-2">
                     <span className="sparkle text-xs">✦</span>
