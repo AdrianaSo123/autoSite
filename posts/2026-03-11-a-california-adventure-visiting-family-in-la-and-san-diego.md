@@ -1,5 +1,5 @@
 ---
-title: A California Adventure: Visiting Family in LA and San Diego
+title: "A California Adventure: Visiting Family in LA and San Diego"
 date: 2026-03-11
 slug: 2026-03-11-a-california-adventure-visiting-family-in-la-and-san-diego
 tags: ["Travel","California","Family"]
