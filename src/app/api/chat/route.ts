@@ -42,7 +42,7 @@ const SYSTEM_PROMPT =
     "When sharing tool-derived information, present it as a concise, readable summary. " +
     "Be concise, clear, and practical.";
 
-function buildLocalFallbackReply(message: string, _history: IncomingMessage[]): string {
+function buildLocalFallbackReply(message: string): string {
     const lower = message.toLowerCase();
 
     if (/(latest|recent|new|newest)\s+(post|posts|article|articles)/.test(lower)) {
@@ -126,7 +126,6 @@ function toResponse(
     reply: string,
     action: string | null = null,
     messageForSuggestions?: string,
-    _historyForSuggestions: IncomingMessage[] = [],
     suggestionContext?: SuggestionContext
 ): ChatApiResponse {
     const suggestedActions = messageForSuggestions
@@ -247,7 +246,7 @@ export async function POST(request: NextRequest) {
             });
             const suggestionSource = result.action ? undefined : message;
             return NextResponse.json(
-                toResponse(result.reply, result.action || null, suggestionSource, history)
+                toResponse(result.reply, result.action || null, suggestionSource)
             );
         }
 
@@ -273,18 +272,17 @@ export async function POST(request: NextRequest) {
                 logActivity("tool_response_summarized", { route: "chat_api" });
             }
 
-            return NextResponse.json(toResponse(reply, "agent_tool_call", message, history, "blog_results"));
+            return NextResponse.json(toResponse(reply, "agent_tool_call", message, "blog_results"));
         }
 
         // 3. LLM assistant response with system prompt + multi-turn history
         if (!process.env.OPENAI_API_KEY) {
             return NextResponse.json(
                 toResponse(
-                    buildLocalFallbackReply(message, history),
+                    buildLocalFallbackReply(message),
                     null,
                     message,
-                    history,
-                    inferSuggestionContext(message, buildLocalFallbackReply(message, history))
+                    inferSuggestionContext(message, buildLocalFallbackReply(message))
                 )
             );
         }
@@ -307,7 +305,6 @@ export async function POST(request: NextRequest) {
                     "I hit a temporary model issue. Please try again, or ask me to show recent posts.",
                 null,
                 message,
-                history,
                 inferSuggestionContext(
                     message,
                     reply ||
