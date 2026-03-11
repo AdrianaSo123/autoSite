@@ -8,7 +8,10 @@ import { useChat } from "@/hooks/useChat";
 // Markdown renderer (lightweight — bold + newlines)
 // ---------------------------------------------------------------------------
 
-function renderMarkdown(text: string): React.ReactNode {
+function renderMarkdown(
+    text: string,
+    onInternalLink?: (href: string) => void
+): React.ReactNode {
     const lines = text.split("\n");
     return lines.map((line, i) => {
         // Split by bold chunks
@@ -19,12 +22,21 @@ function renderMarkdown(text: string): React.ReactNode {
                 // Check if the bold text contains a link
                 const linkMatch = inner.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
                 if (linkMatch) {
+                    const href = linkMatch[2];
+                    const isInternal = href.startsWith("/");
                     return (
                         <strong key={j} className="font-semibold">
                             <a
-                                href={linkMatch[2]}
+                                href={href}
                                 className="underline underline-offset-4 hover:opacity-70 transition-opacity"
                                 style={{ color: "var(--ink)" }}
+                                {...(!isInternal ? { target: "_blank", rel: "noreferrer noopener" } : {})}
+                                onClick={(e) => {
+                                    if (isInternal && onInternalLink) {
+                                        e.preventDefault();
+                                        onInternalLink(href);
+                                    }
+                                }}
                             >
                                 {linkMatch[1]}
                             </a>
@@ -40,12 +52,21 @@ function renderMarkdown(text: string): React.ReactNode {
                 return linkParts.map((subPart, k) => {
                     const match = subPart.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
                     if (match) {
+                        const href = match[2];
+                        const isInternal = href.startsWith("/");
                         return (
                             <a
                                 key={`${j}-${k}`}
-                                href={match[2]}
+                                href={href}
                                 className="underline underline-offset-4 hover:opacity-70 transition-opacity"
                                 style={{ color: "var(--ink)" }}
+                                {...(!isInternal ? { target: "_blank", rel: "noreferrer noopener" } : {})}
+                                onClick={(e) => {
+                                    if (isInternal && onInternalLink) {
+                                        e.preventDefault();
+                                        onInternalLink(href);
+                                    }
+                                }}
                             >
                                 {match[1]}
                             </a>
@@ -172,6 +193,12 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
                 )}
 
                 {/* Chat messages */}
+                <div
+                    role="log"
+                    aria-live="polite"
+                    aria-relevant="additions text"
+                    aria-label="Conversation"
+                />
                 {messages.map((msg, index) => (
                     <div
                         key={msg.id}
@@ -188,7 +215,7 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
                                     fontFamily: "'Inter', sans-serif",
                                 }}
                             >
-                                {renderMarkdown(msg.content)}
+                                {renderMarkdown(msg.content, (href) => router.push(href))}
                             </div>
 
                             {msg.role === "assistant" &&
@@ -217,6 +244,8 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
                     <div className="flex justify-start">
                         <div
                             className="rounded-2xl rounded-bl-sm px-5 py-4 text-base"
+                            role="status"
+                            aria-live="polite"
                             style={{
                                 background: "var(--cream-light)",
                                 border: "1px solid var(--ink-border)",
@@ -233,7 +262,14 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
             </div>
 
             {/* Input area */}
-            <div className="absolute bottom-4 left-0 right-0 px-4 md:px-8 pointer-events-none">
+            <div
+                className="sticky bottom-0 left-0 right-0 px-4 md:px-8 pt-2 pointer-events-none"
+                style={{
+                    paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))",
+                    background:
+                        "linear-gradient(180deg, rgba(245,240,232,0) 0%, rgba(245,240,232,0.9) 35%, rgba(245,240,232,1) 100%)",
+                }}
+            >
                 <div className="max-w-4xl mx-auto flex flex-col gap-2 pointer-events-auto">
                     {!isEmpty && (
                         renderStarterPrompts({ compact: true })
@@ -247,12 +283,17 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
                             boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
                         }}
                     >
+                        <label htmlFor="chat-input" className="sr-only">
+                            Chat message
+                        </label>
                         <input
+                            id="chat-input"
                             type="text"
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={handleKeyDown}
                             placeholder="What would you like to explore?"
+                            aria-label="Type your message"
                             className="flex-1 text-base outline-none bg-transparent"
                             style={{ fontFamily: "'Inter', sans-serif" }}
                             disabled={isLoading}
@@ -260,6 +301,7 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
                         <button
                             onClick={() => handleSend()}
                             disabled={isLoading || !input.trim()}
+                            aria-label="Send message"
                             className="pill-button text-sm px-6 disabled:opacity-40 disabled:cursor-not-allowed"
                             style={{ borderRadius: "999px" }}
                         >
