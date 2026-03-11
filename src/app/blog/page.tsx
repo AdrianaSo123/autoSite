@@ -6,6 +6,11 @@ export const metadata = {
     description: "Ideas, articles, and thoughts from So Studio.",
 };
 
+function formatDate(dateStr: string): string {
+    const d = new Date(dateStr + "T12:00:00");
+    return d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+}
+
 export default function BlogPage() {
     const posts = getAllPosts();
 
