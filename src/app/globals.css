@@ -26,6 +26,8 @@
   --radius-input: 999px;
   --radius-card: 16px;
   --border-strength: 1.5px;
+  /* Chat gradient */
+  --chat-bg-gradient: linear-gradient(180deg, rgba(245,240,232,0) 0%, rgba(245,240,232,0.9) 35%, rgba(245,240,232,1) 100%);
 }
 
 
@@ -82,6 +84,7 @@
   --radius-input: 4px;
   --radius-card: 10px;
   --border-strength: 1px;
+  --chat-bg-gradient: linear-gradient(180deg, rgba(17,16,16,0) 0%, rgba(17,16,16,0.9) 35%, rgba(17,16,16,1) 100%);
 }
 
 /* ── Swiss theme — International Style, Helvetica, tight grid, red accent ── */
@@ -296,4 +299,225 @@ h1, h2, h3, h4, h5, h6 {
   .text-balance {
     text-wrap: balance;
   }
+}
+
+/* ════════════════════════════════════════════════════════════
+   PER-THEME VISUAL OVERRIDES
+   Override both Tailwind utility classes and React inline styles
+   ════════════════════════════════════════════════════════════ */
+
+/* ── BAUHAUS — geometric poster aesthetic ── */
+/* All headings: heavy geometric sans, uppercase, regimented */
+[data-theme="bauhaus"] h1,
+[data-theme="bauhaus"] h2,
+[data-theme="bauhaus"] h3,
+[data-theme="bauhaus"] h4 {
+  font-family: 'Bebas Neue', 'Impact', 'Arial Black', sans-serif !important;
+  font-weight: 400 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 0.95;
+}
+/* Override inline Playfair styles (hero h2, blog headings) */
+[data-theme="bauhaus"] [style*="Playfair"] {
+  font-family: 'Bebas Neue', 'Impact', 'Arial Black', sans-serif !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  font-style: normal !important;
+}
+/* Cards: hard black border + offset red shadow — Bauhaus poster style */
+[data-theme="bauhaus"] .ink-card {
+  border: 2px solid #111 !important;
+  border-radius: 0 !important;
+  box-shadow: 6px 6px 0 var(--ink) !important;
+}
+[data-theme="bauhaus"] .ink-card:hover {
+  transform: translate(-3px, -3px) translateY(0) !important;
+  box-shadow: 9px 9px 0 var(--ink) !important;
+}
+/* kill all rounded corners sitewide in Bauhaus */
+[data-theme="bauhaus"] [class*="rounded"] {
+  border-radius: 0 !important;
+}
+/* Ink divider: thick black rule */
+[data-theme="bauhaus"] .ink-divider {
+  background: #111 !important;
+  height: 3px !important;
+}
+/* Nav links: tiny, tracked, uppercase */
+[data-theme="bauhaus"] nav a,
+[data-theme="bauhaus"] nav button {
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+/* Kill decorative sparkles — form follows function */
+[data-theme="bauhaus"] .sparkle,
+[data-theme="bauhaus"] .float {
+  animation: none !important;
+  display: none !important;
+}
+/* Pill button: filled black rectangle */
+[data-theme="bauhaus"] .pill-button {
+  background: #111 !important;
+  border-color: #111 !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+[data-theme="bauhaus"] .pill-button-outline {
+  border-color: #111 !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+
+/* ── SWISS — International Typographic Style ── */
+/* All type: Helvetica Neue, nothing else */
+[data-theme="swiss"] h1,
+[data-theme="swiss"] h2,
+[data-theme="swiss"] h3,
+[data-theme="swiss"] h4 {
+  font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+}
+[data-theme="swiss"] [style*="Playfair"],
+[data-theme="swiss"] [style*="Inter"] {
+  font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif !important;
+  font-style: normal !important;
+  letter-spacing: -0.01em !important;
+}
+/* Cards: top red rule only — strict grid baseline */
+[data-theme="swiss"] .ink-card {
+  border: none !important;
+  border-top: 3px solid var(--ink) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  background: transparent !important;
+}
+[data-theme="swiss"] .ink-card:hover {
+  transform: none !important;
+  border-top-color: var(--ink) !important;
+}
+/* Near-zero rounding everywhere */
+[data-theme="swiss"] [class*="rounded"] {
+  border-radius: 2px !important;
+}
+/* Divider: precise 2px rule */
+[data-theme="swiss"] .ink-divider {
+  background: var(--ink) !important;
+  height: 2px !important;
+}
+/* Kill sparkles */
+[data-theme="swiss"] .sparkle,
+[data-theme="swiss"] .float {
+  animation: none !important;
+  display: none !important;
+}
+/* Pill button: square, tracked */
+[data-theme="swiss"] .pill-button,
+[data-theme="swiss"] .pill-button-outline {
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+}
+
+/* ── JAPANESE — restrained, spacious, serif ── */
+/* All type: Noto Serif */
+[data-theme="japanese"] h1,
+[data-theme="japanese"] h2,
+[data-theme="japanese"] h3,
+[data-theme="japanese"] h4 {
+  font-family: 'Noto Serif', Georgia, 'Times New Roman', serif !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.15em;
+  line-height: 1.5;
+}
+[data-theme="japanese"] [style*="Playfair"],
+[data-theme="japanese"] [style*="Inter"] {
+  font-family: 'Noto Serif', Georgia, serif !important;
+}
+/* Cards: hairline border, square, no shadow, generous padding */
+[data-theme="japanese"] .ink-card {
+  border: 1px solid rgba(43, 45, 107, 0.14) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 2.25rem !important;
+}
+[data-theme="japanese"] .ink-card:hover {
+  transform: none !important;
+  border-color: rgba(43, 45, 107, 0.3) !important;
+  box-shadow: none !important;
+}
+/* Divider: faint centered fade */
+[data-theme="japanese"] .ink-divider {
+  background: linear-gradient(90deg, transparent, rgba(43,45,107,0.25), transparent) !important;
+  height: 1px !important;
+}
+/* Kill animation — stillness is intentional */
+[data-theme="japanese"] .sparkle,
+[data-theme="japanese"] .float,
+[data-theme="japanese"] .fade-in-up {
+  animation: none !important;
+  opacity: 1 !important;
+}
+/* Soft rounding on interactive elements */
+[data-theme="japanese"] [class*="rounded"] {
+  border-radius: 3px !important;
+}
+/* Nav: spaced, small, uppercase */
+[data-theme="japanese"] nav a,
+[data-theme="japanese"] nav button {
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+}
+
+/* ── NOIR — cinematic dark, dramatic ── */
+/* Headings: Playfair Display, with subtle glow */
+[data-theme="noir"] h1,
+[data-theme="noir"] h2,
+[data-theme="noir"] h3 {
+  font-family: 'Playfair Display', Georgia, serif !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em;
+  text-shadow: 0 2px 20px rgba(237, 232, 216, 0.15);
+}
+[data-theme="noir"] [style*="Playfair"] {
+  text-shadow: 0 1px 12px rgba(237, 232, 216, 0.1);
+}
+/* Cards: dark surface, deep shadow, cinematic */
+[data-theme="noir"] .ink-card {
+  background: #1C1B1B !important;
+  border-color: rgba(237, 232, 216, 0.07) !important;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.55) !important;
+}
+[data-theme="noir"] .ink-card:hover {
+  box-shadow: 0 16px 60px rgba(0,0,0,0.75), 0 4px 16px rgba(0,0,0,0.4) !important;
+  transform: translateY(-2px) !important;
+  border-color: rgba(237, 232, 216, 0.14) !important;
+}
+/* Divider: warm cream gradient */
+[data-theme="noir"] .ink-divider {
+  background: linear-gradient(90deg, transparent, rgba(237,232,216,0.35), rgba(237,232,216,0.5), rgba(237,232,216,0.35), transparent) !important;
+}
+/* sparkles in noir mode: dim them to be atmospheric not cheerful */
+[data-theme="noir"] .sparkle {
+  color: rgba(237, 232, 216, 0.5) !important;
+}
+/* Pill button in noir: outlined cream */
+[data-theme="noir"] .pill-button {
+  background: rgba(237, 232, 216, 0.9) !important;
+  color: #111010 !important;
+  border-color: rgba(237, 232, 216, 0.9) !important;
+}
+[data-theme="noir"] .pill-button:hover {
+  background: rgba(237, 232, 216, 1) !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important;
 }

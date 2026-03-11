@@ -257,14 +257,14 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
 
                         <h2
                             className="text-4xl md:text-5xl font-semibold mb-6"
-                            style={{ fontFamily: "'Playfair Display', serif", color: "var(--ink)" }}
+                            style={{ fontFamily: "var(--font-heading)", color: "var(--ink)" }}
                         >
                             So Studio
                         </h2>
 
                         <p
                             className="text-lg md:text-xl max-w-2xl mx-auto mb-4 leading-relaxed"
-                            style={{ color: "var(--text-secondary)", fontFamily: "'Inter', sans-serif" }}
+                            style={{ color: "var(--text-secondary)", fontFamily: "var(--font-body)" }}
                         >
                             A studio exploring ideas about AI, UX, and intelligent systems —
                             where design thinking meets the age of agents.
@@ -272,7 +272,7 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
 
                         <p
                             className="text-sm mb-8 italic"
-                            style={{ color: "var(--text-secondary)", fontFamily: "'Playfair Display', serif" }}
+                            style={{ color: "var(--text-secondary)", fontFamily: "var(--font-heading)" }}
                         >
                             Ask a question, explore a post, or just start a conversation.
                         </p>
@@ -301,7 +301,7 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
                                     background: msg.role === "user" ? "var(--ink)" : "var(--cream-light)",
                                     color: msg.role === "user" ? "var(--cream)" : "var(--ink)",
                                     border: msg.role === "assistant" ? "1px solid var(--ink-border)" : "none",
-                                    fontFamily: "'Inter', sans-serif",
+                                    fontFamily: "var(--font-body)",
                                 }}
                             >
                                 {renderMarkdown(msg.content, (href) => router.push(href))}
@@ -339,7 +339,7 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
                                 background: "var(--cream-light)",
                                 border: "1px solid var(--ink-border)",
                                 color: "var(--text-secondary)",
-                                fontFamily: "'Inter', sans-serif",
+                                fontFamily: "var(--font-body)",
                                 minWidth: "160px"
                             }}
                         >
@@ -355,8 +355,7 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
                 className="sticky bottom-0 left-0 right-0 px-4 md:px-8 pt-2 pointer-events-none"
                 style={{
                     paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))",
-                    background:
-                        "linear-gradient(180deg, rgba(245,240,232,0) 0%, rgba(245,240,232,0.9) 35%, rgba(245,240,232,1) 100%)",
+                    background: "var(--chat-bg-gradient)",
                 }}
             >
                 <div className="max-w-4xl mx-auto flex flex-col gap-2 pointer-events-auto">
@@ -366,7 +365,7 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
                             <button
                                 onClick={clearChat}
                                 className="text-xs hover:opacity-70 transition-opacity"
-                                style={{ color: "var(--text-secondary)", fontFamily: "'Inter', sans-serif" }}
+                                style={{ color: "var(--text-secondary)", fontFamily: "var(--font-body)" }}
                                 aria-label="Clear conversation and start over"
                             >
                                 ↺ Start over
@@ -393,7 +392,7 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
                             placeholder="What would you like to explore?"
                             aria-label="Type your message"
                             className="flex-1 text-base outline-none bg-transparent"
-                            style={{ fontFamily: "'Inter', sans-serif" }}
+                            style={{ fontFamily: "var(--font-body)" }}
                             disabled={isLoading}
                         />
                         <button

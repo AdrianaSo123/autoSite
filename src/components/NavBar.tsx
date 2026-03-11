@@ -16,13 +16,13 @@ export default function NavBar() {
             <Link
                 href="/"
                 className="font-semibold text-lg tracking-wide"
-                style={{ fontFamily: "'Playfair Display', serif", color: "var(--ink)" }}
+                style={{ fontFamily: "var(--font-heading)", color: "var(--ink)" }}
             >
                 ✦ So Studio
             </Link>
             <div
                 className="flex gap-6 items-center text-sm"
-                style={{ fontFamily: "'Inter', sans-serif" }}
+                style={{ fontFamily: "var(--font-body)" }}
             >
                 <Link
                     href="/blog"
