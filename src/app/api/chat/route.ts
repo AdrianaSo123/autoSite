@@ -234,7 +234,7 @@ export async function POST(request: NextRequest) {
 
         const history = normalizeHistory(body.history);
         const session = await auth();
-        const isAdmin = !!session?.user;
+        const isAdmin = !!session?.user?.isAdmin;
 
         // 1. Command router first — deterministic, highest priority
         const result = await routeCommand(message);

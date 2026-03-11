@@ -7,8 +7,6 @@ import { useChat } from "@/hooks/useChat";
 // ---------------------------------------------------------------------------
 
 const ADMIN_COMMANDS = [
-    "Process latest recording",
-    "Publish draft",
     "Show recent posts",
     "Search posts",
     "Blog summary",
