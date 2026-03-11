@@ -51,6 +51,14 @@ export async function routeCommand(message: string): Promise<CommandResult | nul
     }
 
     // Theme switching (admin only — action handled client-side)
+    // "reset style" / "restore default" always snaps back to Studio
+    if (/\b(reset|restore|default)\s+(style|theme)\b|(reset\s+to\s+default|restore\s+default)/.test(lower)) {
+        return {
+            reply: `Restoring **Studio** — cream & blue, the default.`,
+            action: `set_theme:studio`,
+        };
+    }
+
     if (/(?:set|change|use|apply|make)\s+(?:the\s+)?(?:style|theme|it)|^(?:studio|midnight|forest|rose|minimal|sand|bauhaus|noir|deco|swiss|memphis|nordic|japanese)$/.test(lower)) {
         const theme = parseThemeFromCommand(lower);
         if (theme) {

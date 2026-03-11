@@ -28,6 +28,7 @@ const ADMIN_COMMANDS = [
     "Show recent posts",
     "Blog summary",
     "Set style",
+    "Reset style",
 ];
 
 export default function AdminChat() {
