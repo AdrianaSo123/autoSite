@@ -115,7 +115,7 @@ export async function routeCommand(message: string): Promise<CommandResult | nul
     // Help
     if (startsWithAny(lower, HELP_COMMAND_PREFIXES)) {
         return {
-            reply: "This is a **Conversational AI Publishing Platform**. Here's what I can do:\n\n• **Show recent posts** — List the latest blog posts\n• **Process latest recording** — Transcribe audio and generate a post\n• **Publish draft** — Publish a draft blog post\n• **Search posts** — Search blog posts by keyword\n\nJust type a command naturally!",
+            reply: "This is a **Conversational AI Publishing Platform**. Here's what I can do:\n\n• **Show recent posts** — List the latest blog posts\n• **Search posts** — Search blog posts by keyword\n• **Blog summary** — Overview of all published posts\n\nJust type a command naturally!",
         };
     }
 

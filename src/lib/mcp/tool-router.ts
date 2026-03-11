@@ -48,6 +48,11 @@ export async function routeToTool(
             return summarizeTool.execute({ index });
         }
 
+        const postSummaryTool = tools.find((t) => t.name === "getPostSummary");
+        if (postSummaryTool && matchesKeywords(lower, "getPostSummary")) {
+            return postSummaryTool.execute();
+        }
+
         const searchTool = tools.find((t) => t.name === "searchBlogPosts");
         if (searchTool) {
             const cleaned = lower
