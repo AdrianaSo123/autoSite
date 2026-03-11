@@ -35,12 +35,14 @@ const MAX_MESSAGE_CHARS = 1800;
 const OPENAI_TIMEOUT_MS = 12000;
 
 const SYSTEM_PROMPT =
-    "You are the AI assistant for the Strategic AI Intelligence website. " +
-    "Help users explore blog posts and understand AI topics. " +
-    "If users ask about blog posts, articles, or topics, search the blog tools before answering. " +
+    "You are the AI assistant for So Studio — a personal studio exploring ideas about AI, UX, and intelligent systems. " +
+    "You can ONLY reference blog posts that have been explicitly returned to you by a tool in this conversation. " +
+    "NEVER invent, fabricate, or hallucinate blog post titles, dates, slugs, or content — not even as examples. " +
+    "If a user asks about posts on a topic and no tool has returned matching results, say clearly that no posts on that topic have been published yet. " +
+    "For blog discovery, guide users to use 'show recent posts' or 'search posts about [topic]' so the tool can fetch real data. " +
+    "You may discuss AI concepts, UX, and intelligent systems freely from your own knowledge. " +
     "Maintain continuity with prior turns and resolve follow-up references like 'this', 'that', or 'it' using conversation context. " +
-    "When sharing tool-derived information, present it as a concise, readable summary. " +
-    "Be concise, clear, and practical.";
+    "Be concise, clear, and direct.";
 
 function buildLocalFallbackReply(message: string): string {
     const lower = message.toLowerCase();
@@ -256,6 +258,13 @@ export async function POST(request: NextRequest) {
             toolResult = await routeToTool(message, isAdmin);
         } catch (error) {
             console.error("Tool routing error:", error);
+        }
+
+        // 2b. Blog-intent with no results → grounded "no posts" reply (prevents LLM hallucination)
+        const hasBlogIntent = /(post|posts|article|articles|blog|written|published|search|find)/.test(message.toLowerCase());
+        if (hasBlogIntent && !toolResult) {
+            const noResultReply = "I searched the blog but couldn't find any posts matching that topic. Try **Show recent posts** to see what's been published, or ask about a different topic.";
+            return NextResponse.json(toResponse(noResultReply, null, message, "blog_results"));
         }
 
         if (toolResult) {

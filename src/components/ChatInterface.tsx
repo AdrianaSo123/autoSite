@@ -159,7 +159,76 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
             <div className="flex-1 overflow-y-auto px-2 md:px-8 pb-40 space-y-6">
                 {/* Hero welcome */}
                 {isEmpty && (
-                    <div className="flex flex-col items-center justify-center h-full text-center py-16">
+                    <div className="flex flex-col items-center justify-center h-full text-center py-16 relative">
+                        {/* Decorative vase — left */}
+                        <div className="hidden md:block absolute left-0 top-8 opacity-25 pointer-events-none select-none" style={{ color: "var(--ink)" }}>
+                            <svg width="110" height="190" viewBox="0 0 110 190" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ color: "var(--ink)" }}>
+                                {/* Neck rim */}
+                                <ellipse cx="55" cy="18" rx="14" ry="5" stroke="currentColor" strokeWidth="1.2" fill="none"/>
+                                {/* Neck */}
+                                <path d="M41 18 C38 28 35 35 30 50" stroke="currentColor" strokeWidth="1.2" fill="none"/>
+                                <path d="M69 18 C72 28 75 35 80 50" stroke="currentColor" strokeWidth="1.2" fill="none"/>
+                                {/* Shoulder band */}
+                                <path d="M29 52 Q55 44 81 52" stroke="currentColor" strokeWidth="1" fill="none"/>
+                                {/* Body */}
+                                <path d="M30 50 C18 70 14 95 16 118 C18 145 28 165 40 175 C46 179 51 181 55 181 C59 181 64 179 70 175 C82 165 92 145 94 118 C96 95 92 70 80 50 Z" stroke="currentColor" strokeWidth="1.4" fill="none"/>
+                                {/* Central floral circle */}
+                                <circle cx="55" cy="112" r="22" stroke="currentColor" strokeWidth="0.9" fill="none"/>
+                                {/* Flower petals */}
+                                <ellipse cx="55" cy="91" rx="6" ry="11" stroke="currentColor" strokeWidth="0.8" fill="none"/>
+                                <ellipse cx="55" cy="133" rx="6" ry="11" stroke="currentColor" strokeWidth="0.8" fill="none"/>
+                                <ellipse cx="34" cy="112" rx="11" ry="6" stroke="currentColor" strokeWidth="0.8" fill="none"/>
+                                <ellipse cx="76" cy="112" rx="11" ry="6" stroke="currentColor" strokeWidth="0.8" fill="none"/>
+                                <ellipse cx="40" cy="97" rx="7" ry="12" transform="rotate(45 40 97)" stroke="currentColor" strokeWidth="0.7" fill="none"/>
+                                <ellipse cx="70" cy="97" rx="7" ry="12" transform="rotate(-45 70 97)" stroke="currentColor" strokeWidth="0.7" fill="none"/>
+                                <ellipse cx="40" cy="127" rx="7" ry="12" transform="rotate(-45 40 127)" stroke="currentColor" strokeWidth="0.7" fill="none"/>
+                                <ellipse cx="70" cy="127" rx="7" ry="12" transform="rotate(45 70 127)" stroke="currentColor" strokeWidth="0.7" fill="none"/>
+                                {/* Center dot */}
+                                <circle cx="55" cy="112" r="4" stroke="currentColor" strokeWidth="0.8" fill="none"/>
+                                {/* Small leaves on shoulder */}
+                                <path d="M36 62 C32 57 30 52 36 50 C39 53 38 59 36 62Z" stroke="currentColor" strokeWidth="0.8" fill="none"/>
+                                <path d="M74 62 C78 57 80 52 74 50 C71 53 72 59 74 62Z" stroke="currentColor" strokeWidth="0.8" fill="none"/>
+                                {/* Dot row above base */}
+                                <circle cx="44" cy="158" r="1.8" fill="currentColor"/>
+                                <circle cx="55" cy="161" r="1.8" fill="currentColor"/>
+                                <circle cx="66" cy="158" r="1.8" fill="currentColor"/>
+                                {/* Base band */}
+                                <path d="M40 175 Q55 181 70 175" stroke="currentColor" strokeWidth="1" fill="none"/>
+                                <ellipse cx="55" cy="179" rx="15" ry="5" stroke="currentColor" strokeWidth="1" fill="none"/>
+                            </svg>
+                        </div>
+
+                        {/* Decorative bowls — right */}
+                        <div className="hidden md:block absolute right-0 top-16 opacity-25 pointer-events-none select-none" style={{ color: "var(--ink)" }}>
+                            <svg width="90" height="170" viewBox="0 0 90 170" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                {/* Top teacup */}
+                                <path d="M22 20 Q45 13 68 20 Q72 38 70 46 Q56 54 45 54 Q34 54 20 46 Q18 38 22 20Z" stroke="currentColor" strokeWidth="1.2" fill="none"/>
+                                <ellipse cx="45" cy="20" rx="23" ry="7" stroke="currentColor" strokeWidth="1" fill="none"/>
+                                <path d="M25 44 Q45 50 65 44" stroke="currentColor" strokeWidth="0.8" fill="none"/>
+                                <ellipse cx="45" cy="48" rx="20" ry="5" stroke="currentColor" strokeWidth="1" fill="none"/>
+                                {/* Leaf motif on teacup */}
+                                <path d="M38 33 C36 28 40 24 45 26 C50 24 54 28 52 33 C50 38 45 40 45 40 C45 40 40 38 38 33Z" stroke="currentColor" strokeWidth="0.8" fill="none"/>
+                                {/* Handle */}
+                                <path d="M68 26 C76 26 80 30 80 36 C80 42 76 46 68 44" stroke="currentColor" strokeWidth="1" fill="none"/>
+
+                                {/* Middle bowl */}
+                                <path d="M15 88 Q45 78 75 88 Q80 108 76 118 Q60 128 45 128 Q30 128 14 118 Q10 108 15 88Z" stroke="currentColor" strokeWidth="1.2" fill="none"/>
+                                <ellipse cx="45" cy="88" rx="30" ry="9" stroke="currentColor" strokeWidth="1" fill="none"/>
+                                <ellipse cx="45" cy="122" rx="26" ry="7" stroke="currentColor" strokeWidth="1" fill="none"/>
+                                {/* Fish motif on bowl */}
+                                <path d="M30 108 C34 100 42 98 45 104 C48 98 56 100 60 108 C56 116 48 114 45 108 C42 114 34 116 30 108Z" stroke="currentColor" strokeWidth="0.8" fill="none"/>
+
+                                {/* Small cup at bottom */}
+                                <path d="M26 148 Q45 142 64 148 Q66 158 64 162 Q54 167 45 167 Q36 167 26 162 Q24 158 26 148Z" stroke="currentColor" strokeWidth="1.2" fill="none"/>
+                                <ellipse cx="45" cy="148" rx="19" ry="6" stroke="currentColor" strokeWidth="1" fill="none"/>
+                                <ellipse cx="45" cy="163" rx="16" ry="5" stroke="currentColor" strokeWidth="0.9" fill="none"/>
+                                {/* Dot band on small cup */}
+                                <circle cx="36" cy="156" r="1.5" fill="currentColor"/>
+                                <circle cx="45" cy="157" r="1.5" fill="currentColor"/>
+                                <circle cx="54" cy="156" r="1.5" fill="currentColor"/>
+                            </svg>
+                        </div>
+
                         <div className="flex gap-6 mb-6">
                             <span className="sparkle text-lg" style={{ animationDelay: "0s" }}>✦</span>
                             <span className="sparkle text-sm" style={{ animationDelay: "0.5s" }}>✦</span>
