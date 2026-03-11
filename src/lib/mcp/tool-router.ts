@@ -76,7 +76,15 @@ export async function routeToTool(
         }
     }
 
-    // 1. Keyword match — fast, deterministic
+    // 1. Theme intent — admin only
+    const themeTool = tools.find((t) => t.name === "setTheme");
+    if (themeTool && /(?:set|change|use|apply|make)\s+(?:the\s+)?(?:style|theme|it)|\bstyle\b.*\bto\b/.test(lower)) {
+        const themeMatch = lower.match(/(?:to|style|theme)\s+(studio|midnight|forest|rose|minimal|sand|bauhaus|noir|deco|swiss|memphis|nordic|japanese)/);
+        const theme = themeMatch ? themeMatch[1] : "";
+        return themeTool.execute({ theme });
+    }
+
+    // 2. Keyword match — fast, deterministic
     for (const tool of tools) {
         if (matchesKeywords(lower, tool.name)) {
             return tool.execute(extractParams(lower, tool.name));
@@ -119,6 +127,10 @@ const KEYWORD_MAP: Record<string, string[]> = {
         "summarize the newest post", "summarize the latest post", "summarize newest post",
         "summarize latest post", "summarize post 1", "summarize post 2", "summarize post 3",
         "summarize the first post",
+    ],
+    setTheme: [
+        "set style", "change style", "change theme", "set theme", "use theme",
+        "show styles", "show themes", "list styles", "list themes", "available styles",
     ],
 };
 

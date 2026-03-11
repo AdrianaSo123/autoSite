@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useChat } from "@/hooks/useChat";
+import { applyTheme, loadSavedTheme, type ThemeName } from "@/lib/theme";
 
 // Lightweight markdown renderer (matches ChatInterface)
 function renderMarkdown(text: string): React.ReactNode {
@@ -25,13 +26,22 @@ function renderMarkdown(text: string): React.ReactNode {
 
 const ADMIN_COMMANDS = [
     "Show recent posts",
-    "Search posts",
     "Blog summary",
+    "Set style",
 ];
 
 export default function AdminChat() {
+    useEffect(() => { loadSavedTheme(); }, []);
+
     const { messages, input, isLoading, isEmpty, setInput, sendMessage, handleKeyDown, clearChat, messagesEndRef } =
-        useChat();
+        useChat({
+            onAction: (action) => {
+                if (action.startsWith("set_theme:")) {
+                    const theme = action.substring("set_theme:".length) as ThemeName;
+                    applyTheme(theme);
+                }
+            },
+        });
 
     return (
         <div

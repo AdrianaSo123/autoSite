@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import NavBar from "@/components/NavBar";
 import Providers from "@/components/Providers";
+import ThemeRestorer from "@/components/ThemeRestorer";
 import "./globals.css";
 import { Analytics } from '@vercel/analytics/react';
 
@@ -18,6 +19,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <Providers>
+          <ThemeRestorer />
           <div className="flex flex-col min-h-screen">
             <header
               className="border-b"

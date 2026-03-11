@@ -17,6 +17,174 @@
   --foreground: var(--ink);
 }
 
+/* ── Midnight theme ── */
+[data-theme="midnight"] {
+  --cream: #0F1117;
+  --cream-light: #1A1D2E;
+  --ink: #E8E4FF;
+  --ink-light: #C4BCFF;
+  --ink-faint: rgba(232, 228, 255, 0.08);
+  --ink-border: rgba(232, 228, 255, 0.18);
+  --text-primary: #E8E4FF;
+  --text-secondary: rgba(232, 228, 255, 0.65);
+  --background: #0F1117;
+  --foreground: #E8E4FF;
+}
+
+/* ── Forest theme ── */
+[data-theme="forest"] {
+  --cream: #F0F4EE;
+  --cream-light: #F7FAF6;
+  --ink: #2D5016;
+  --ink-light: #4A7A28;
+  --ink-faint: rgba(45, 80, 22, 0.08);
+  --ink-border: rgba(45, 80, 22, 0.2);
+  --text-primary: #2D5016;
+  --text-secondary: rgba(45, 80, 22, 0.7);
+  --background: #F0F4EE;
+  --foreground: #2D5016;
+}
+
+/* ── Rose theme ── */
+[data-theme="rose"] {
+  --cream: #FDF0F0;
+  --cream-light: #FEF8F8;
+  --ink: #8B2252;
+  --ink-light: #B43470;
+  --ink-faint: rgba(139, 34, 82, 0.08);
+  --ink-border: rgba(139, 34, 82, 0.2);
+  --text-primary: #8B2252;
+  --text-secondary: rgba(139, 34, 82, 0.7);
+  --background: #FDF0F0;
+  --foreground: #8B2252;
+}
+
+/* ── Minimal theme ── */
+[data-theme="minimal"] {
+  --cream: #FFFFFF;
+  --cream-light: #F9F9F9;
+  --ink: #111111;
+  --ink-light: #444444;
+  --ink-faint: rgba(17, 17, 17, 0.06);
+  --ink-border: rgba(17, 17, 17, 0.15);
+  --text-primary: #111111;
+  --text-secondary: rgba(17, 17, 17, 0.55);
+  --background: #FFFFFF;
+  --foreground: #111111;
+}
+
+/* ── Sand theme ── */
+[data-theme="sand"] {
+  --cream: #F7F0DF;
+  --cream-light: #FBF7EE;
+  --ink: #7A5C1E;
+  --ink-light: #A07828;
+  --ink-faint: rgba(122, 92, 30, 0.08);
+  --ink-border: rgba(122, 92, 30, 0.2);
+  --text-primary: #7A5C1E;
+  --text-secondary: rgba(122, 92, 30, 0.7);
+  --background: #F7F0DF;
+  --foreground: #7A5C1E;
+}
+
+/* ── Bauhaus theme ── */
+[data-theme="bauhaus"] {
+  --cream: #FFFFFF;
+  --cream-light: #F5F5F5;
+  --ink: #C8001F;
+  --ink-light: #E5001F;
+  --ink-faint: rgba(200, 0, 31, 0.07);
+  --ink-border: rgba(200, 0, 31, 0.22);
+  --text-primary: #111111;
+  --text-secondary: rgba(17, 17, 17, 0.6);
+  --background: #FFFFFF;
+  --foreground: #111111;
+}
+
+/* ── Noir theme ── */
+[data-theme="noir"] {
+  --cream: #111010;
+  --cream-light: #1C1B1B;
+  --ink: #EDE8D8;
+  --ink-light: #D4CEBC;
+  --ink-faint: rgba(237, 232, 216, 0.08);
+  --ink-border: rgba(237, 232, 216, 0.16);
+  --text-primary: #EDE8D8;
+  --text-secondary: rgba(237, 232, 216, 0.6);
+  --background: #111010;
+  --foreground: #EDE8D8;
+}
+
+/* ── Deco theme ── */
+[data-theme="deco"] {
+  --cream: #16140F;
+  --cream-light: #221E15;
+  --ink: #C9A84C;
+  --ink-light: #E0C06A;
+  --ink-faint: rgba(201, 168, 76, 0.09);
+  --ink-border: rgba(201, 168, 76, 0.25);
+  --text-primary: #F0E6C8;
+  --text-secondary: rgba(240, 230, 200, 0.65);
+  --background: #16140F;
+  --foreground: #C9A84C;
+}
+
+/* ── Swiss theme ── */
+[data-theme="swiss"] {
+  --cream: #FFFFFF;
+  --cream-light: #F8F8F8;
+  --ink: #EC1D24;
+  --ink-light: #FF3B40;
+  --ink-faint: rgba(236, 29, 36, 0.06);
+  --ink-border: rgba(236, 29, 36, 0.2);
+  --text-primary: #0A0A0A;
+  --text-secondary: rgba(10, 10, 10, 0.55);
+  --background: #FFFFFF;
+  --foreground: #0A0A0A;
+}
+
+/* ── Memphis theme ── */
+[data-theme="memphis"] {
+  --cream: #FFF176;
+  --cream-light: #FFFDE7;
+  --ink: #00695C;
+  --ink-light: #00897B;
+  --ink-faint: rgba(0, 105, 92, 0.08);
+  --ink-border: rgba(0, 105, 92, 0.22);
+  --text-primary: #1A1A1A;
+  --text-secondary: rgba(26, 26, 26, 0.6);
+  --background: #FFF176;
+  --foreground: #00695C;
+}
+
+/* ── Nordic theme ── */
+[data-theme="nordic"] {
+  --cream: #EDF0F2;
+  --cream-light: #F5F7F9;
+  --ink: #2B3A4A;
+  --ink-light: #455A6A;
+  --ink-faint: rgba(43, 58, 74, 0.07);
+  --ink-border: rgba(43, 58, 74, 0.18);
+  --text-primary: #2B3A4A;
+  --text-secondary: rgba(43, 58, 74, 0.62);
+  --background: #EDF0F2;
+  --foreground: #2B3A4A;
+}
+
+/* ── Japanese theme ── */
+[data-theme="japanese"] {
+  --cream: #F7F4EF;
+  --cream-light: #FDFBF8;
+  --ink: #2B2D6B;
+  --ink-light: #3D3F8F;
+  --ink-faint: rgba(43, 45, 107, 0.07);
+  --ink-border: rgba(43, 45, 107, 0.18);
+  --text-primary: #2B2D6B;
+  --text-secondary: rgba(43, 45, 107, 0.6);
+  --background: #F7F4EF;
+  --foreground: #2B2D6B;
+}
+
 * {
   box-sizing: border-box;
 }

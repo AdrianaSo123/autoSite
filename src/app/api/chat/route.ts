@@ -299,14 +299,23 @@ export async function POST(request: NextRequest) {
                 hadHistory: history.length > 0,
             });
 
-            const summarized = await summarizeToolResult(message, toolResult, history);
-            const reply = summarized || toolResult;
+            // Extract embedded action (e.g. __ACTION__:set_theme:midnight)
+            let embeddedAction: string | null = null;
+            let cleanToolResult = toolResult;
+            const actionMatch = toolResult.match(/^__ACTION__:([^\n]+)\n/);
+            if (actionMatch) {
+                embeddedAction = actionMatch[1];
+                cleanToolResult = toolResult.slice(actionMatch[0].length);
+            }
+
+            const summarized = await summarizeToolResult(message, cleanToolResult, history);
+            const reply = summarized || cleanToolResult;
 
             if (summarized) {
                 logActivity("tool_response_summarized", { route: "chat_api" });
             }
 
-            return NextResponse.json(toResponse(reply, "agent_tool_call", message, "blog_results"));
+            return NextResponse.json(toResponse(reply, embeddedAction ?? "agent_tool_call", message, embeddedAction ? "general" : "blog_results"));
         }
 
         // 3. LLM assistant response with system prompt + multi-turn history

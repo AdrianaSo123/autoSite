@@ -262,15 +262,15 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
                             className="text-lg md:text-xl max-w-2xl mx-auto mb-4 leading-relaxed"
                             style={{ color: "var(--text-secondary)", fontFamily: "'Inter', sans-serif" }}
                         >
-                            A studio exploring ideas about AI, UX,
-                            and intelligent systems.
+                            A studio exploring ideas about AI, UX, and intelligent systems —
+                            where design thinking meets the age of agents.
                         </p>
 
                         <p
                             className="text-sm mb-8 italic"
                             style={{ color: "var(--text-secondary)", fontFamily: "'Playfair Display', serif" }}
                         >
-                            Start a conversation.
+                            Ask a question, explore a post, or just start a conversation.
                         </p>
 
                         {renderStarterPrompts({ compact: false })}

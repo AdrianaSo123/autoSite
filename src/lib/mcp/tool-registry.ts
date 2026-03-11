@@ -8,6 +8,7 @@
 import { getAllPosts } from "@/lib/posts";
 import { searchBlogPosts, formatSearchResults } from "@/lib/mcp/search-blog-posts";
 import { sessionState } from "@/lib/mcp/session";
+import { THEMES, type ThemeName } from "@/lib/theme";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -126,6 +127,31 @@ export const toolRegistry: MCPTool[] = [
             }, "summarizePost"),
     },
 ];
+
+// Admin-only tools (appended separately for clarity)
+toolRegistry.push(
+    {
+        name: "setTheme",
+        description: "Change the visual style/theme of the site. Available themes: studio, midnight, forest, rose, minimal, sand, bauhaus, noir, deco, swiss, memphis, nordic, japanese.",
+        access: "admin" as ToolAccess,
+        execute: (params) =>
+            safeExecute(async () => {
+                const theme = (params?.theme as string || "").toLowerCase().trim() as ThemeName;
+                if (!theme) {
+                    const list = Object.entries(THEMES)
+                        .map(([key, val]) => `• **${val.label}** (${key}) — ${val.description}`)
+                        .join("\n");
+                    return `Available styles:\n\n${list}\n\nSay **"set style to [name]"** to apply one.`;
+                }
+                if (!(theme in THEMES)) {
+                    const names = Object.keys(THEMES).join(", ");
+                    return `Unknown theme "${theme}". Available: ${names}.`;
+                }
+                const info = THEMES[theme];
+                return `__ACTION__:set_theme:${theme}\nSwitching to **${info.label}** — ${info.description}.`;
+            }, "setTheme"),
+    }
+);
 
 // ---------------------------------------------------------------------------
 // Access control

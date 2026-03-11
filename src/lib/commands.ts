@@ -7,6 +7,7 @@
  */
 
 import { sessionState } from "@/lib/mcp/session";
+import { parseThemeFromCommand, THEMES } from "@/lib/theme";
 
 export interface CommandResult {
     reply: string;
@@ -46,6 +47,25 @@ export async function routeCommand(message: string): Promise<CommandResult | nul
         return {
             reply: "Opening admin studio...",
             action: "open_admin_studio",
+        };
+    }
+
+    // Theme switching (admin only — action handled client-side)
+    if (/(?:set|change|use|apply|make)\s+(?:the\s+)?(?:style|theme|it)|^(?:studio|midnight|forest|rose|minimal|sand|bauhaus|noir|deco|swiss|memphis|nordic|japanese)$/.test(lower)) {
+        const theme = parseThemeFromCommand(lower);
+        if (theme) {
+            const info = THEMES[theme];
+            return {
+                reply: `Switching to **${info.label}** — ${info.description}.`,
+                action: `set_theme:${theme}`,
+            };
+        }
+        // They asked about themes but didn't name one
+        const themeList = Object.entries(THEMES)
+            .map(([key, val]) => `• **${val.label}** — ${val.description}`)
+            .join("\n");
+        return {
+            reply: `Here are the available styles:\n\n${themeList}\n\nSay **"set style to midnight"** (or any name above) to apply it.`,
         };
     }
 
