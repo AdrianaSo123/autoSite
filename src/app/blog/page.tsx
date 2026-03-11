@@ -2,8 +2,8 @@ import Link from "next/link";
 import { getAllPosts } from "@/lib/posts";
 
 export const metadata = {
-    title: "Blog — AI Publishing Platform",
-    description: "Browse all blog posts on the AI Publishing Platform.",
+    title: "Blog — So Studio",
+    description: "Ideas, articles, and thoughts from So Studio.",
 };
 
 export default function BlogPage() {

@@ -5,8 +5,8 @@ import "./globals.css";
 import { Analytics } from '@vercel/analytics/react';
 
 export const metadata: Metadata = {
-  title: "AI Publishing Platform",
-  description: "Conversational AI Publishing Platform",
+  title: "So Studio",
+  description: "A studio exploring ideas about AI, UX, and intelligent systems.",
 };
 
 export default function RootLayout({

@@ -4,7 +4,7 @@ import AdminChat from "@/components/AdminChat";
 import ActivityDashboard from "@/components/ActivityDashboard";
 
 export const metadata = {
-    title: "Studio — AI Publishing Platform",
+    title: "Studio — So Studio",
 };
 
 export default async function StudioPage() {

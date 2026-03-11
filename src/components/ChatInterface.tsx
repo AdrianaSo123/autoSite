@@ -93,8 +93,8 @@ function renderMarkdown(
 
 const SUGGESTIONS = [
     "Show recent posts",
-    "Search posts about AI",
-    "What is this platform?",
+    "Ask about AI",
+    "What is this studio?",
 ];
 
 interface ChatInterfaceProps {
@@ -170,22 +170,22 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
                             className="text-4xl md:text-5xl font-semibold mb-6"
                             style={{ fontFamily: "'Playfair Display', serif", color: "var(--ink)" }}
                         >
-                            Welcome to AI Platform
+                            So Studio
                         </h2>
 
                         <p
                             className="text-lg md:text-xl max-w-2xl mx-auto mb-4 leading-relaxed"
                             style={{ color: "var(--text-secondary)", fontFamily: "'Inter', sans-serif" }}
                         >
-                            A conversational publishing platform that transforms
-                            voice recordings into written articles.
+                            A studio exploring ideas about AI, UX,
+                            and intelligent systems.
                         </p>
 
                         <p
                             className="text-sm mb-8 italic"
                             style={{ color: "var(--text-secondary)", fontFamily: "'Playfair Display', serif" }}
                         >
-                            Ask me anything to get started.
+                            Start a conversation.
                         </p>
 
                         {renderStarterPrompts({ compact: false })}

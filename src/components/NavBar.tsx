@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSession, signIn, signOut } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 
 export default function NavBar() {
     const { data: session } = useSession();
@@ -18,7 +18,7 @@ export default function NavBar() {
                 className="font-semibold text-lg tracking-wide"
                 style={{ fontFamily: "'Playfair Display', serif", color: "var(--ink)" }}
             >
-                ✦ adriana.so ✦
+                ✦ So Studio
             </Link>
             <div
                 className="flex gap-6 items-center text-sm"
@@ -52,22 +52,13 @@ export default function NavBar() {
                         Studio
                     </Link>
                 )}
-                {session ? (
+                {session?.user?.isAdmin && (
                     <button
                         onClick={() => signOut()}
                         className="hover:opacity-70 transition-opacity text-xs"
                         style={{ color: "var(--text-secondary)" }}
                     >
                         Sign out
-                    </button>
-                ) : (
-                    <button
-                        onClick={() => signIn("google")}
-                        className="pill-button-outline text-xs py-1.5 px-4"
-                        style={{ borderRadius: "999px" }}
-                        title="Sign in to access the admin studio"
-                    >
-                        Admin
                     </button>
                 )}
             </div>

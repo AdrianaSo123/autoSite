@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: BlogPostPageProps) {
     const post = getPostBySlug(slug);
     if (!post) return { title: "Post Not Found" };
     return {
-        title: `${post.title} — AI Publishing Platform`,
+        title: `${post.title} — So Studio`,
         description: post.excerpt,
     };
 }
