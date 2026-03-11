@@ -70,7 +70,7 @@ export async function routeCommand(message: string): Promise<CommandResult | nul
         }
         // They asked about themes but didn't name one
         const themeList = Object.entries(THEMES)
-            .map(([key, val]) => `• **${val.label}** — ${val.description}`)
+            .map(([, val]) => `• **${val.label}** — ${val.description}`)
             .join("\n");
         return {
             reply: `Here are the available styles:\n\n${themeList}\n\nSay **"set style to midnight"** (or any name above) to apply it.`,
