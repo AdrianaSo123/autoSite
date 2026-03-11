@@ -26,6 +26,9 @@ export default function BlogPage() {
                 <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                     Ideas, articles, and thoughts — all from voice to page.
                 </p>
+                <p className="text-xs mt-2" style={{ color: 'var(--text-secondary)', fontFamily: "'Inter', sans-serif" }}>
+                    {posts.length} {posts.length === 1 ? 'post' : 'posts'} published
+                </p>
                 <div className="ink-divider max-w-xs mx-auto mt-6" />
             </div>
 

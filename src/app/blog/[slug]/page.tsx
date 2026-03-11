@@ -33,13 +33,14 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
     return (
         <div className="max-w-3xl mx-auto fade-in-up relative">
-            <Link
-                href="/"
-                className="text-sm mb-8 inline-flex items-center gap-2 hover:opacity-70 transition-opacity bg-[var(--cream-light)] px-4 py-2 rounded-full border border-[var(--ink-border)] shadow-sm"
-                style={{ color: 'var(--ink)', fontFamily: "'Inter', sans-serif", fontWeight: 500 }}
-            >
-                <span className="font-serif italic text-lg leading-none mt-[-2px]">←</span> Back to AI Chat
-            </Link>
+            {/* Breadcrumb */}
+            <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs mb-8" style={{ color: 'var(--text-secondary)', fontFamily: "'Inter', sans-serif" }}>
+                <Link href="/" className="hover:opacity-70 transition-opacity" style={{ color: 'var(--ink)' }}>Home</Link>
+                <span aria-hidden="true">/</span>
+                <Link href="/blog" className="hover:opacity-70 transition-opacity" style={{ color: 'var(--ink)' }}>Blog</Link>
+                <span aria-hidden="true">/</span>
+                <span className="truncate max-w-[200px]" aria-current="page">{post.title}</span>
+            </nav>
             <article>
                 <div className="flex items-center gap-2 mb-2">
                     <span className="sparkle text-xs">✦</span>

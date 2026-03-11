@@ -42,6 +42,7 @@ interface UseChatReturn {
     setInput: (value: string) => void;
     sendMessage: (text?: string) => Promise<ChatResponse | undefined>;
     handleKeyDown: (e: React.KeyboardEvent) => void;
+    clearChat: () => void;
     messagesEndRef: React.RefObject<HTMLDivElement>;
 }
 
@@ -177,6 +178,12 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
         return () => clearInterval(interval);
     }, [isLoading]);
 
+    const clearChat = useCallback(() => {
+        setMessages([]);
+        setInput("");
+        setHasNotified(false);
+    }, []);
+
     return {
         messages,
         input,
@@ -186,6 +193,7 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
         setInput,
         sendMessage,
         handleKeyDown,
+        clearChat,
         messagesEndRef,
     };
 }

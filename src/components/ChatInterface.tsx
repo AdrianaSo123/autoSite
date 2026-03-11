@@ -92,9 +92,9 @@ function renderMarkdown(
 // ---------------------------------------------------------------------------
 
 const SUGGESTIONS = [
-    "What are the latest AI trends?",
-    "Show recent blog posts",
-    "Explain agentic AI systems",
+    "Show recent posts",
+    "Search posts about AI",
+    "What is this platform?",
 ];
 
 interface ChatInterfaceProps {
@@ -103,7 +103,7 @@ interface ChatInterfaceProps {
 
 export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {}) {
     const router = useRouter();
-    const { messages, input, isLoading, loadingText, isEmpty, setInput, sendMessage, handleKeyDown, messagesEndRef } =
+    const { messages, input, isLoading, loadingText, isEmpty, setInput, sendMessage, handleKeyDown, clearChat, messagesEndRef } =
         useChat({
             onFirstMessage,
             onAction: (action) => {
@@ -271,6 +271,19 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
                 }}
             >
                 <div className="max-w-4xl mx-auto flex flex-col gap-2 pointer-events-auto">
+                    {/* Start over button — only visible mid-conversation */}
+                    {!isEmpty && (
+                        <div className="flex justify-end">
+                            <button
+                                onClick={clearChat}
+                                className="text-xs hover:opacity-70 transition-opacity"
+                                style={{ color: "var(--text-secondary)", fontFamily: "'Inter', sans-serif" }}
+                                aria-label="Clear conversation and start over"
+                            >
+                                ↺ Start over
+                            </button>
+                        </div>
+                    )}
                     <div
                         className="p-2 pl-4 flex gap-3 shadow-lg rounded-full"
                         style={{

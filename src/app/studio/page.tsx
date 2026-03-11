@@ -17,12 +17,13 @@ export default async function StudioPage() {
 
     // Admin → render full studio
     return (
-        <div className="max-w-3xl mx-auto fade-in-up">
-            <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col flex-1 fade-in-up w-full h-full">
+            {/* Studio header */}
+            <div className="max-w-5xl mx-auto w-full flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                     <span className="sparkle text-sm">✦</span>
                     <h1
-                        className="text-3xl font-semibold"
+                        className="text-2xl font-semibold"
                         style={{ fontFamily: "'Playfair Display', serif", color: "var(--ink)" }}
                     >
                         Studio
@@ -32,20 +33,14 @@ export default async function StudioPage() {
                     {session.user?.email}
                 </span>
             </div>
-            <div className="ink-divider mb-8" />
 
-            <div className="mb-6">
-                <p
-                    className="text-sm mb-4"
-                    style={{ color: "var(--text-secondary)", fontFamily: "'Inter', sans-serif" }}
-                >
-                    Use the admin console below to control the publishing system.
-                </p>
-            </div>
+            {/* Full-screen chat — matches homepage layout */}
+            <section className="w-full flex-1 max-w-5xl mx-auto flex flex-col">
+                <AdminChat />
+            </section>
 
-            <AdminChat />
-
-            <div className="mt-8">
+            {/* Activity dashboard below chat */}
+            <div className="max-w-5xl mx-auto w-full mt-8">
                 <ActivityDashboard />
             </div>
         </div>

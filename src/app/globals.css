@@ -12,7 +12,7 @@
   --ink-faint: rgba(43, 58, 142, 0.08);
   --ink-border: rgba(43, 58, 142, 0.2);
   --text-primary: #2B3A8E;
-  --text-secondary: rgba(43, 58, 142, 0.6);
+  --text-secondary: rgba(43, 58, 142, 0.72);
   --background: var(--cream);
   --foreground: var(--ink);
 }
