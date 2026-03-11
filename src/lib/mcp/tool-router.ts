@@ -79,7 +79,7 @@ export async function routeToTool(
     // 1. Theme intent — admin only
     const themeTool = tools.find((t) => t.name === "setTheme");
     if (themeTool && /(?:set|change|use|apply|make)\s+(?:the\s+)?(?:style|theme|it)|\bstyle\b.*\bto\b/.test(lower)) {
-        const themeMatch = lower.match(/(?:to|style|theme)\s+(studio|midnight|forest|rose|minimal|sand|bauhaus|noir|deco|swiss|memphis|nordic|japanese)/);
+        const themeMatch = lower.match(/(?:to|style|theme)\s+(studio|bauhaus|swiss|japanese|noir)/);
         const theme = themeMatch ? themeMatch[1] : "";
         return themeTool.execute({ theme });
     }

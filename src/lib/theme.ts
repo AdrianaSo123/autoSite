@@ -1,19 +1,11 @@
-export type ThemeName = "studio" | "midnight" | "forest" | "rose" | "minimal" | "sand" | "bauhaus" | "noir" | "deco" | "swiss" | "memphis" | "nordic" | "japanese";
+export type ThemeName = "studio" | "bauhaus" | "swiss" | "japanese" | "noir";
 
 export const THEMES: Record<ThemeName, { label: string; description: string }> = {
-    studio:   { label: "Studio",   description: "Cream & blue — the default" },
-    midnight: { label: "Midnight", description: "Dark navy, soft lavender ink" },
-    forest:   { label: "Forest",   description: "Soft sage green, deep moss ink" },
-    rose:     { label: "Rose",     description: "Blush background, deep rose ink" },
-    minimal:  { label: "Minimal",  description: "Pure white, near-black ink" },
-    sand:     { label: "Sand",     description: "Warm sand, golden brown ink" },
-    bauhaus:  { label: "Bauhaus",  description: "White + bold primary red — geometric, stark" },
-    noir:     { label: "Noir",     description: "Deep black, warm cream text — cinematic" },
-    deco:     { label: "Deco",     description: "Champagne gold on near-black — art deco" },
-    swiss:    { label: "Swiss",    description: "Pure white, precise Swiss red — International Style" },
-    memphis:  { label: "Memphis",  description: "Warm yellow, vivid teal ink — bold 80s geometry" },
-    nordic:   { label: "Nordic",   description: "Cool blue-grey, dark slate — Scandinavian minimal" },
-    japanese: { label: "Japanese", description: "Washi white, deep indigo — quiet Japanese aesthetic" },
+    studio:   { label: "Studio",   description: "Cream & blue — the default, Playfair headings" },
+    bauhaus:  { label: "Bauhaus",  description: "Geometric, primary red, sharp corners — Bauhaus movement" },
+    swiss:    { label: "Swiss",    description: "Helvetica, tight grid, Swiss red — International Style" },
+    japanese: { label: "Japanese", description: "Noto Serif, generous spacing, quiet indigo" },
+    noir:     { label: "Noir",     description: "Deep black, warm cream, cinematic — dark mode" },
 };
 
 const THEME_STORAGE_KEY = "so_studio_theme";
@@ -25,8 +17,6 @@ export function applyTheme(theme: ThemeName): void {
     } else {
         document.documentElement.setAttribute("data-theme", theme);
     }
-    // Sync background-color on body too so the browser chrome matches
-    document.body.style.background = "var(--background)";
     localStorage.setItem(THEME_STORAGE_KEY, theme);
 }
 

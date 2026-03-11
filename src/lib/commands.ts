@@ -59,7 +59,7 @@ export async function routeCommand(message: string): Promise<CommandResult | nul
         };
     }
 
-    if (/(?:set|change|use|apply|make)\s+(?:the\s+)?(?:style|theme|it)|^(?:studio|midnight|forest|rose|minimal|sand|bauhaus|noir|deco|swiss|memphis|nordic|japanese)$/.test(lower)) {
+    if (/(?:set|change|use|apply|make)\s+(?:the\s+)?(?:style|theme|it)|^(?:studio|bauhaus|swiss|japanese|noir)$/.test(lower)) {
         const theme = parseThemeFromCommand(lower);
         if (theme) {
             const info = THEMES[theme];

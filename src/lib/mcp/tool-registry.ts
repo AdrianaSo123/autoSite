@@ -132,7 +132,7 @@ export const toolRegistry: MCPTool[] = [
 toolRegistry.push(
     {
         name: "setTheme",
-        description: "Change the visual style/theme of the site. Available themes: studio, midnight, forest, rose, minimal, sand, bauhaus, noir, deco, swiss, memphis, nordic, japanese.",
+        description: "Change the visual design style of the site. Available styles: studio (default cream & blue), bauhaus (geometric, red, sharp), swiss (Helvetica, grid, Swiss red), japanese (serif, airy spacing, indigo), noir (dark mode, cinematic).",
         access: "admin" as ToolAccess,
         execute: (params) =>
             safeExecute(async () => {
