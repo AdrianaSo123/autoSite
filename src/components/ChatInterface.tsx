@@ -3,6 +3,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { useChat } from "@/hooks/useChat";
+import { applyTheme, type ThemeName } from "@/lib/theme";
 
 // ---------------------------------------------------------------------------
 // Markdown renderer (lightweight — bold + newlines)
@@ -112,6 +113,9 @@ export default function ChatInterface({ onFirstMessage }: ChatInterfaceProps = {
                 } else if (action.startsWith("open_post:")) {
                     const targetUrl = action.substring("open_post:".length);
                     setTimeout(() => router.push(targetUrl), 800);
+                } else if (action.startsWith("set_theme:")) {
+                    const theme = action.substring("set_theme:".length) as ThemeName;
+                    applyTheme(theme);
                 }
             }
         });
