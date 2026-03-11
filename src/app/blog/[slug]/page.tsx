@@ -21,6 +21,11 @@ export async function generateMetadata({ params }: BlogPostPageProps) {
     };
 }
 
+function formatDate(dateStr: string): string {
+    const d = new Date(dateStr + "T12:00:00");
+    return d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+}
+
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
     const { slug } = await params;
     const post = getPostBySlug(slug);
@@ -34,35 +39,27 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     return (
         <div className="max-w-3xl mx-auto fade-in-up relative">
             {/* Breadcrumb */}
-            <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs mb-8" style={{ color: 'var(--text-secondary)', fontFamily: "'Inter', sans-serif" }}>
+            <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs mb-8" style={{ color: 'var(--text-secondary)', fontFamily: "var(--font-body)" }}>
                 <Link href="/" className="hover:opacity-70 transition-opacity" style={{ color: 'var(--ink)' }}>Home</Link>
                 <span aria-hidden="true">/</span>
                 <Link href="/blog" className="hover:opacity-70 transition-opacity" style={{ color: 'var(--ink)' }}>Blog</Link>
                 <span aria-hidden="true">/</span>
-                <span className="truncate max-w-[200px]" aria-current="page">{post.title}</span>
+                <span className="truncate max-w-[240px]" aria-current="page">{post.title}</span>
             </nav>
-            <Link
-                href="/"
-                className="inline-flex items-center gap-1.5 text-xs hover:opacity-70 transition-opacity mb-8"
-                style={{ color: 'var(--text-secondary)', fontFamily: "'Inter', sans-serif" }}
-            >
-                ← Back to chat
-            </Link>
             <article>
-                <div className="flex items-center gap-2 mb-2">
-                    <span className="sparkle text-xs">✦</span>
-                    <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{post.date}</p>
-                </div>
+                <p className="text-xs mb-2" style={{ color: 'var(--text-secondary)', fontFamily: "var(--font-body)" }}>
+                    {formatDate(post.date)}
+                </p>
                 <h1
                     className="text-4xl font-semibold mb-8 leading-tight"
-                    style={{ fontFamily: "'Playfair Display', serif", color: 'var(--ink)' }}
+                    style={{ fontFamily: "var(--font-heading)", color: 'var(--ink)' }}
                 >
                     {post.title}
                 </h1>
                 <div className="ink-divider mb-8" />
                 <div
-                    className="prose max-w-none text-sm leading-relaxed"
-                    style={{ color: 'var(--text-primary)', fontFamily: "'Inter', sans-serif" }}
+                    className="prose max-w-none text-base leading-relaxed"
+                    style={{ color: 'var(--text-primary)', fontFamily: "var(--font-body)" }}
                     dangerouslySetInnerHTML={{ __html: htmlContent }}
                 />
             </article>

@@ -166,7 +166,7 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
 
                 return data as ChatResponse;
             } catch {
-                appendAssistantMessage("Something went wrong. Please try again.");
+                appendAssistantMessage("Something went wrong connecting to the server. Check your connection and try again.");
             } finally {
                 setIsLoading(false);
             }

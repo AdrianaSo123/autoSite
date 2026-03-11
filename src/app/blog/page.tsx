@@ -34,29 +34,28 @@ export default function BlogPage() {
 
             <div className="flex flex-col gap-5">
                 {posts.map((post) => (
-                    <article key={post.slug} className="ink-card group">
-                        <Link href={`/blog/${post.slug}`}>
+                    <Link key={post.slug} href={`/blog/${post.slug}`} className="block group">
+                        <article className="ink-card">
                             <h2
                                 className="text-xl font-semibold mb-1 group-hover:opacity-80 transition-opacity"
-                                style={{ fontFamily: "'Playfair Display', serif", color: 'var(--ink)' }}
+                                style={{ fontFamily: "var(--font-heading)", color: 'var(--ink)' }}
                             >
                                 {post.title}
                             </h2>
-                        </Link>
-                        <p className="text-xs mb-3" style={{ color: 'var(--text-secondary)' }}>
-                            {post.date}
-                        </p>
-                        <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                            {post.excerpt}
-                        </p>
-                        <Link
-                            href={`/blog/${post.slug}`}
-                            className="text-sm mt-3 inline-block hover:opacity-70 transition-opacity"
-                            style={{ color: 'var(--ink)', fontFamily: "'Playfair Display', serif", fontStyle: 'italic' }}
-                        >
-                            Read more →
-                        </Link>
-                    </article>
+                            <p className="text-xs mb-3" style={{ color: 'var(--text-secondary)', fontFamily: "var(--font-body)" }}>
+                                {formatDate(post.date)}
+                            </p>
+                            <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)', fontFamily: "var(--font-body)" }}>
+                                {post.excerpt}
+                            </p>
+                            <span
+                                className="text-sm mt-3 inline-block group-hover:opacity-70 transition-opacity"
+                                style={{ color: 'var(--ink)', fontFamily: "var(--font-heading)", fontStyle: 'italic' }}
+                            >
+                                Read more →
+                            </span>
+                        </article>
+                    </Link>
                 ))}
             </div>
         </div>
