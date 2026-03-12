@@ -8,6 +8,7 @@
 
 import { sessionState } from "@/lib/mcp/session";
 import { parseThemeFromCommand, THEMES } from "@/lib/theme";
+import { getAllPosts } from "@/lib/posts";
 
 export interface CommandResult {
     reply: string;
@@ -28,9 +29,7 @@ const PUBLISH_COMMAND_PREFIXES = [
 
 const HELP_COMMAND_PREFIXES = [
     "help",
-    "what is this",
     "about this",
-    "what can you do",
 ];
 
 const GREETING_PREFIXES = ["hi", "hey", "hello", "yo", "sup"];
@@ -115,9 +114,26 @@ export async function routeCommand(message: string): Promise<CommandResult | nul
     const openTitleMatch = lower.match(/^open\s+"(.+)"[\s.!?]*$/);
     if (openTitleMatch) {
         const titleQuery = openTitleMatch[1].toLowerCase();
-        const post = sessionState.lastPostResults.find(
+
+        // 1. Check session cache first (fast)
+        let post = sessionState.lastPostResults.find(
             (p) => p.title.toLowerCase() === titleQuery
         );
+
+        // 2. Fall back to full post list (handles cold session / page refresh)
+        if (!post) {
+            const allPosts = getAllPosts();
+            const found = allPosts.find(
+                (p) =>
+                    p.title.toLowerCase() === titleQuery ||
+                    p.title.toLowerCase().includes(titleQuery) ||
+                    titleQuery.includes(p.title.toLowerCase())
+            );
+            if (found) {
+                post = { title: found.title, slug: found.slug, date: found.date };
+            }
+        }
+
         if (post) {
             return {
                 reply: `Opening: ${post.title}`,
@@ -125,7 +141,7 @@ export async function routeCommand(message: string): Promise<CommandResult | nul
             };
         } else {
             return {
-                reply: `I couldn't find a post matching that title. Try "show recent posts" to see what's available.`,
+                reply: `I couldn't find that post. Try "show recent posts" to see what's available.`,
             };
         }
     }
@@ -159,17 +175,39 @@ export async function routeCommand(message: string): Promise<CommandResult | nul
         };
     }
 
+    // Studio intro — explicit "what is / about" questions about So Studio
+    if (
+        /\b(what is|what's|tell me about|about|who are you)\b.*\b(so studio|this studio|this platform|this site|this app)\b/.test(lower) ||
+        /^(what (is|are) (so studio|this)|(what|how) (does|do) (this|it) work)/.test(lower) ||
+        /\b(what can you do|what do you do)\b/.test(lower)
+    ) {
+        return {
+            reply:
+                "**So Studio** is a personal studio exploring ideas about AI, UX, and intelligent systems — where design thinking meets the age of agents.\n\n" +
+                "Here's what I can help with:\n" +
+                "• **Show recent posts** — browse published writing\n" +
+                "• **Search posts about [topic]** — find articles by keyword\n" +
+                "• Ask anything about AI, LLMs, or UX — I'll do my best to answer",
+        };
+    }
+
     // Help
     if (startsWithAny(lower, HELP_COMMAND_PREFIXES)) {
         return {
-            reply: "This is a **Conversational AI Publishing Platform**. Here's what I can do:\n\n• **Show recent posts** — List the latest blog posts\n• **Search posts** — Search blog posts by keyword\n• **Blog summary** — Overview of all published posts\n\nJust type a command naturally!",
+            reply:
+                "Here's what I can do:\n\n" +
+                "• **Show recent posts** — list the latest blog posts\n" +
+                "• **Search posts about [topic]** — find articles by keyword\n" +
+                "• **Blog summary** — overview of all published posts\n" +
+                "• Ask me anything about AI, UX, or intelligent systems\n\n" +
+                "Just type naturally!",
         };
     }
 
     // Greetings
     if (startsWithAny(lower, GREETING_PREFIXES)) {
         return {
-            reply: "Hey! 👋 I'm your AI publishing assistant. Try asking me to \"show recent posts\" or say \"help\" to see what I can do.",
+            reply: "Hey! I'm the So Studio assistant. Ask me anything about AI, UX, or intelligent systems — or try \"show recent posts\" to explore published writing.",
         };
     }
 

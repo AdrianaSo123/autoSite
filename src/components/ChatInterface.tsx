@@ -94,7 +94,7 @@ function renderMarkdown(
 
 const SUGGESTIONS = [
     "Show recent posts",
-    "Ask about AI",
+    "Explain AI agents",
     "What is this studio?",
 ];
 

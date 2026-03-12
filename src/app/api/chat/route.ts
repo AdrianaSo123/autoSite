@@ -56,14 +56,14 @@ function buildLocalFallbackReply(message: string): string {
     }
 
     if (/\b(explain|what is|how does|simplify|simpler|real.world examples?|give.*examples?)\b/.test(lower)) {
-        return "To answer follow-up questions I need a live LLM connection. Make sure `OPENAI_API_KEY` is set in `.env.local` and restart the dev server.";
+        return "I'm not able to answer that at the moment. Try **show recent posts** to browse published writing, or ask me a different question.";
     }
 
     if (/\b(trend|trending|latest in|new in|recent in)\b/.test(lower)) {
-        return "For live AI trend questions I need an LLM connection. You can also try **search posts for AI** to browse published posts.";
+        return "I'm not able to answer that at the moment. Try **search posts about AI** to browse what's been published.";
     }
 
-    return "I can help with blog discovery and AI topics. Ask me to **show recent blog posts**, **search posts about a topic**, or **explain an AI concept**.";
+    return "Try asking me to **show recent posts**, **search posts about a topic**, or ask anything about AI or UX.";
 }
 
 function inferSuggestionContext(message: string, reply: string): SuggestionContext {

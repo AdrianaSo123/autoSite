@@ -198,7 +198,6 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
             "✦ Connecting...",
             "✦ Analyzing context...",
             "✦ Drafting response...",
-            "✦ Securing publishing studio...",
         ];
 
         let i = 0;
