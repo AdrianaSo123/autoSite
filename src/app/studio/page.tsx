@@ -1,7 +1,6 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import AdminChat from "@/components/AdminChat";
-import ActivityDashboard from "@/components/ActivityDashboard";
 
 export const metadata = {
     title: "Studio — So Studio",
@@ -17,7 +16,7 @@ export default async function StudioPage() {
 
     // Admin → render full studio
     return (
-        <div className="flex flex-col flex-1 fade-in-up w-full h-full">
+        <div className="flex flex-col flex-1 fade-in-up w-full">
             {/* Studio header */}
             <div className="max-w-5xl mx-auto w-full flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
@@ -35,14 +34,9 @@ export default async function StudioPage() {
             </div>
 
             {/* Full-screen chat — matches homepage layout */}
-            <section className="w-full flex-1 max-w-5xl mx-auto flex flex-col">
+            <section className="w-full max-w-5xl mx-auto flex flex-col">
                 <AdminChat />
             </section>
-
-            {/* Activity dashboard below chat */}
-            <div className="max-w-5xl mx-auto w-full mt-8">
-                <ActivityDashboard />
-            </div>
         </div>
     );
 }
