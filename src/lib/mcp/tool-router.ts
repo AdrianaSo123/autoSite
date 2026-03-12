@@ -48,11 +48,16 @@ function extractPostIndex(lower: string): number | null {
 function findPostIndexFromHistory(
     history: Array<{ role: string; content: string }>
 ): number {
+    const slugRegex = /\/blog\/([-\w]+)/g;
     for (let i = history.length - 1; i >= 0; i--) {
-        const slugMatches = [...history[i].content.matchAll(/\/blog\/([-\w]+)/g)];
-        for (let j = slugMatches.length - 1; j >= 0; j--) {
-            const slug = slugMatches[j][1];
-            const idx = sessionState.lastPostResults.findIndex((p) => p.slug === slug);
+        const found: string[] = [];
+        let m: RegExpExecArray | null;
+        slugRegex.lastIndex = 0;
+        while ((m = slugRegex.exec(history[i].content)) !== null) {
+            found.push(m[1]);
+        }
+        for (let j = found.length - 1; j >= 0; j--) {
+            const idx = sessionState.lastPostResults.findIndex((p) => p.slug === found[j]);
             if (idx !== -1) return idx;
         }
     }
