@@ -42,6 +42,7 @@ const SYSTEM_PROMPT =
     "For blog discovery, guide users to use 'show recent posts' or 'search posts about [topic]' so the tool can fetch real data. " +
     "You may discuss AI concepts, UX, and intelligent systems freely from your own knowledge. " +
     "Maintain continuity with prior turns and resolve follow-up references like 'this', 'that', or 'it' using conversation context. " +
+    "Never include URLs, slugs, or /blog/ paths in your responses. " +
     "Be concise, clear, and direct.";
 
 function buildLocalFallbackReply(message: string): string {
@@ -230,7 +231,7 @@ async function summarizeToolResult(
             role: "system",
             content:
                 "Summarize tool output for an end user in 2-5 short lines. " +
-                "Keep key facts, remove noise, and preserve links/paths when present. " +
+                "Keep key facts, remove noise, and do not include any URLs or /blog/ paths in your response. " +
                 "Do not invent data.",
         },
         ...history.slice(-4),
@@ -280,7 +281,7 @@ export async function POST(request: NextRequest) {
         // 2. MCP tool routing (blog search, post listing)
         let toolResult = "";
         try {
-            toolResult = await routeToTool(message, isAdmin);
+            toolResult = await routeToTool(message, isAdmin, history);
         } catch (error) {
             console.error("Tool routing error:", error);
         }

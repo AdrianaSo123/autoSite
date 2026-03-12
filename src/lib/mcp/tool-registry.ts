@@ -123,7 +123,7 @@ export const toolRegistry: MCPTool[] = [
                 const post = allPosts.find((p) => p.slug === postRef.slug);
                 if (!post) return `Could not load content for "${postRef.title}".`;
                 const content = post.content?.slice(0, 3000).trim() ?? post.excerpt;
-                return `📄 **${post.title}** (${post.date})\n\n${content}\n\n[Read full post →](/blog/${post.slug})`;
+                return `📄 **${post.title}** (${post.date})\n\n${content}`;
             }, "summarizePost"),
     },
 ];

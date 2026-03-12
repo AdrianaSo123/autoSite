@@ -6,6 +6,7 @@
  */
 
 import { MCPTool, getToolsForUser } from "@/lib/mcp/tool-registry";
+import { sessionState } from "@/lib/mcp/session";
 
 const BLOG_INTENT_TERMS = [
     "blog",
@@ -24,12 +25,48 @@ const BLOG_INTENT_TERMS = [
 // ---------------------------------------------------------------------------
 
 /**
+ * Extract a 0-based post index from a message.
+ * Handles:
+ *   - Explicit digit:  "summarize post 4", "article 2"
+ *   - Ordinal:         "4th", "2nd", "1st", "3rd"
+ * Returns null if nothing found.
+ */
+function extractPostIndex(lower: string): number | null {
+    // Ordinal first ("4th article", "the 2nd post")
+    const ordinalMatch = lower.match(/(\d+)(?:st|nd|rd|th)/);
+    if (ordinalMatch) return parseInt(ordinalMatch[1], 10) - 1;
+    // Plain digit after post/article keyword
+    const digitMatch = lower.match(/(?:post|article)\s*#?\s*(\d+)/);
+    if (digitMatch) return parseInt(digitMatch[1], 10) - 1;
+    return null;
+}
+
+/**
+ * Scan conversation history for the most recently mentioned /blog/<slug> and
+ * return its index in sessionState.lastPostResults. Falls back to 0.
+ */
+function findPostIndexFromHistory(
+    history: Array<{ role: string; content: string }>
+): number {
+    for (let i = history.length - 1; i >= 0; i--) {
+        const slugMatches = [...history[i].content.matchAll(/\/blog\/([-\w]+)/g)];
+        for (let j = slugMatches.length - 1; j >= 0; j--) {
+            const slug = slugMatches[j][1];
+            const idx = sessionState.lastPostResults.findIndex((p) => p.slug === slug);
+            if (idx !== -1) return idx;
+        }
+    }
+    return 0;
+}
+
+/**
  * Route a user message to the appropriate tool.
  * Returns the tool's output string, or "" if no tool matched.
  */
 export async function routeToTool(
     message: string,
-    isAdmin: boolean = false
+    isAdmin: boolean = false,
+    history: Array<{ role: string; content: string }> = []
 ): Promise<string> {
     const lower = message.toLowerCase();
     const tools = getToolsForUser(isAdmin);
@@ -43,8 +80,8 @@ export async function routeToTool(
 
         const summarizeTool = tools.find((t) => t.name === "summarizePost");
         if (summarizeTool && /summarize/.test(lower)) {
-            const numMatch = lower.match(/summarize\s+post\s*#?\s*(\d+)/i);
-            const index = numMatch ? parseInt(numMatch[1], 10) - 1 : 0;
+            const extracted = extractPostIndex(lower);
+            const index = extracted !== null ? extracted : findPostIndexFromHistory(history);
             return summarizeTool.execute({ index });
         }
 
@@ -64,13 +101,17 @@ export async function routeToTool(
                 .replace(/show posts?/gi, "")
                 .trim();
 
-            // Skip if only pronouns/noise remain — let LLM resolve using conversation context
+            // Skip if only pronouns/noise remain — show recent posts instead
             const NOISE = new Set(["show", "blog", "post", "posts", "about", "find",
                 "search", "this", "that", "it", "these", "those", "the", "a", "an"]);
             const meaningfulWords = cleaned.split(/\s+/).filter(
                 (w) => w.length >= 2 && !NOISE.has(w)
             );
-            if (meaningfulWords.length === 0) return "";
+            if (meaningfulWords.length === 0) {
+                const recentTool2 = tools.find((t) => t.name === "listRecentPosts");
+                if (recentTool2) return recentTool2.execute();
+                return "";
+            }
 
             return searchTool.execute({ query: meaningfulWords.join(" ") });
         }
@@ -161,8 +202,8 @@ function extractParams(message: string, toolName: string): Record<string, unknow
         return { query: message };
     }
     if (toolName === "summarizePost") {
-        const numMatch = message.match(/summarize\s+post\s*#?\s*(\d+)/i);
-        return { index: numMatch ? parseInt(numMatch[1], 10) - 1 : 0 };
+        const extracted = extractPostIndex(message.toLowerCase());
+        return { index: extracted !== null ? extracted : 0 };
     }
     return {};
 }
