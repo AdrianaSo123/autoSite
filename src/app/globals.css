@@ -32,14 +32,14 @@
 
 
 
-/* ── Bauhaus theme — geometric, bold, primary red, sharp corners ── */
+/* ── Bauhaus theme — geometric, bold, primary colors (Bauhaus Schule 1919–33) ── */
 [data-theme="bauhaus"] {
   --cream: #FFFFFF;
   --cream-light: #F5F5F5;
-  --ink: #C8001F;
-  --ink-light: #E5001F;
-  --ink-faint: rgba(200, 0, 31, 0.07);
-  --ink-border: rgba(200, 0, 31, 0.22);
+  --ink: #1440CC;
+  --ink-light: #2A55E0;
+  --ink-faint: rgba(20, 64, 204, 0.07);
+  --ink-border: rgba(20, 64, 204, 0.22);
   --text-primary: #111111;
   --text-secondary: rgba(17, 17, 17, 0.6);
   --background: #FFFFFF;
@@ -64,38 +64,38 @@
   border-radius: 0 !important;
 }
 
-/* ── Noir theme — cinematic dark, Playfair headings, generous leading ── */
+/* ── Noir theme — cinematic dark, Playfair italic, warm sepia film-stock ── */
 [data-theme="noir"] {
-  --cream: #111010;
-  --cream-light: #1C1B1B;
-  --ink: #EDE8D8;
-  --ink-light: #D4CEBC;
-  --ink-faint: rgba(237, 232, 216, 0.08);
-  --ink-border: rgba(237, 232, 216, 0.16);
-  --text-primary: #EDE8D8;
-  --text-secondary: rgba(237, 232, 216, 0.6);
-  --background: #111010;
-  --foreground: #EDE8D8;
+  --cream: #0D0C0C;
+  --cream-light: #1A1817;
+  --ink: #D4B896;
+  --ink-light: #E8D0B0;
+  --ink-faint: rgba(212, 184, 150, 0.08);
+  --ink-border: rgba(212, 184, 150, 0.15);
+  --text-primary: #EAD9BE;
+  --text-secondary: rgba(234, 217, 190, 0.55);
+  --background: #0D0C0C;
+  --foreground: #EAD9BE;
   --font-body: 'Inter', sans-serif;
   --font-heading: 'Playfair Display', Georgia, serif;
   --heading-weight: 700;
-  --letter-spacing-heading: 0.04em;
+  --letter-spacing-heading: 0.05em;
   --letter-spacing-body: 0.01em;
-  --line-height-body: 1.75;
+  --line-height-body: 1.8;
   --radius-input: 4px;
-  --radius-card: 10px;
+  --radius-card: 8px;
   --border-strength: 1px;
-  --chat-bg-gradient: linear-gradient(180deg, rgba(17,16,16,0) 0%, rgba(17,16,16,0.9) 35%, rgba(17,16,16,1) 100%);
+  --chat-bg-gradient: linear-gradient(180deg, rgba(13,12,12,0) 0%, rgba(13,12,12,0.92) 35%, rgba(13,12,12,1) 100%);
 }
 
-/* ── Swiss theme — International Style, Helvetica, tight grid, red accent ── */
+/* ── Swiss theme — International Style, Helvetica, black grid + Swiss red ── */
 [data-theme="swiss"] {
   --cream: #FFFFFF;
   --cream-light: #F8F8F8;
-  --ink: #EC1D24;
-  --ink-light: #FF3B40;
-  --ink-faint: rgba(236, 29, 36, 0.06);
-  --ink-border: rgba(236, 29, 36, 0.2);
+  --ink: #111111;
+  --ink-light: #333333;
+  --ink-faint: rgba(17, 17, 17, 0.05);
+  --ink-border: rgba(17, 17, 17, 0.18);
   --text-primary: #0A0A0A;
   --text-secondary: rgba(10, 10, 10, 0.55);
   --background: #FFFFFF;
@@ -328,7 +328,7 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: 0.06em !important;
   font-style: normal !important;
 }
-/* Cards: hard black border + offset red shadow — Bauhaus poster style */
+/* Cards: hard black border + offset blue shadow — Bauhaus primary colour play */
 [data-theme="bauhaus"] .ink-card {
   border: 2px solid #111 !important;
   border-radius: 0 !important;
@@ -361,16 +361,17 @@ h1, h2, h3, h4, h5, h6 {
   animation: none !important;
   display: none !important;
 }
-/* Pill button: filled black rectangle */
+/* Pill button: filled blue (primary ink) with black outline variant */
 [data-theme="bauhaus"] .pill-button {
-  background: #111 !important;
-  border-color: #111 !important;
+  background: var(--ink) !important;
+  border-color: var(--ink) !important;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   font-size: 0.75rem;
 }
 [data-theme="bauhaus"] .pill-button-outline {
   border-color: #111 !important;
+  color: #111 !important;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   font-size: 0.75rem;
@@ -394,10 +395,10 @@ h1, h2, h3, h4, h5, h6 {
   font-style: normal !important;
   letter-spacing: -0.01em !important;
 }
-/* Cards: top red rule only — strict grid baseline */
+/* Cards: top red rule only — the Swiss grid baseline, red from the Swiss cross */
 [data-theme="swiss"] .ink-card {
   border: none !important;
-  border-top: 3px solid var(--ink) !important;
+  border-top: 3px solid #EC1D24 !important;
   border-radius: 0 !important;
   box-shadow: none !important;
   padding-left: 0 !important;
@@ -406,15 +407,15 @@ h1, h2, h3, h4, h5, h6 {
 }
 [data-theme="swiss"] .ink-card:hover {
   transform: none !important;
-  border-top-color: var(--ink) !important;
+  border-top-color: #EC1D24 !important;
 }
 /* Near-zero rounding everywhere */
 [data-theme="swiss"] [class*="rounded"] {
   border-radius: 2px !important;
 }
-/* Divider: precise 2px rule */
+/* Divider: precise 2px Swiss red rule */
 [data-theme="swiss"] .ink-divider {
-  background: var(--ink) !important;
+  background: #EC1D24 !important;
   height: 2px !important;
 }
 /* Kill sparkles */
@@ -423,9 +424,18 @@ h1, h2, h3, h4, h5, h6 {
   animation: none !important;
   display: none !important;
 }
-/* Pill button: square, tracked */
-[data-theme="swiss"] .pill-button,
+/* Pill button: Swiss red filled / outlined — red is the only accent colour */
+[data-theme="swiss"] .pill-button {
+  background: #EC1D24 !important;
+  border-color: #EC1D24 !important;
+  color: #FFFFFF !important;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+}
 [data-theme="swiss"] .pill-button-outline {
+  border-color: #EC1D24 !important;
+  color: #EC1D24 !important;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   font-size: 0.72rem;
@@ -482,47 +492,55 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 0.7rem;
 }
 
-/* ── NOIR — cinematic dark, dramatic ── */
-/* Headings: Playfair Display, with subtle glow */
+/* ── NOIR — cinematic dark, Playfair italic, warm sepia palette ── */
+/* Headings: Playfair italic — film title card treatment */
 [data-theme="noir"] h1,
 [data-theme="noir"] h2,
 [data-theme="noir"] h3 {
   font-family: 'Playfair Display', Georgia, serif !important;
+  font-style: italic !important;
   font-weight: 700 !important;
-  letter-spacing: 0.04em;
-  text-shadow: 0 2px 20px rgba(237, 232, 216, 0.15);
+  letter-spacing: 0.05em;
+  text-shadow: 0 2px 24px rgba(212, 184, 150, 0.14), 0 0 60px rgba(212, 184, 150, 0.06);
 }
 [data-theme="noir"] [style*="Playfair"] {
-  text-shadow: 0 1px 12px rgba(237, 232, 216, 0.1);
+  font-style: italic !important;
+  text-shadow: 0 1px 16px rgba(212, 184, 150, 0.12);
 }
-/* Cards: dark surface, deep shadow, cinematic */
+/* Cards: warm dark surface, deep film-noir shadow */
 [data-theme="noir"] .ink-card {
-  background: #1C1B1B !important;
-  border-color: rgba(237, 232, 216, 0.07) !important;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.55) !important;
+  background: #1A1817 !important;
+  border-color: rgba(212, 184, 150, 0.08) !important;
+  box-shadow: 0 8px 48px rgba(0,0,0,0.65), 0 1px 0 rgba(212,184,150,0.04) inset !important;
 }
 [data-theme="noir"] .ink-card:hover {
-  box-shadow: 0 16px 60px rgba(0,0,0,0.75), 0 4px 16px rgba(0,0,0,0.4) !important;
-  transform: translateY(-2px) !important;
-  border-color: rgba(237, 232, 216, 0.14) !important;
+  box-shadow: 0 20px 70px rgba(0,0,0,0.8), 0 4px 20px rgba(0,0,0,0.5) !important;
+  transform: translateY(-3px) !important;
+  border-color: rgba(212, 184, 150, 0.16) !important;
 }
-/* Divider: warm cream gradient */
+/* Divider: sepia amber gradient — like a shaft of light through fog */
 [data-theme="noir"] .ink-divider {
-  background: linear-gradient(90deg, transparent, rgba(237,232,216,0.35), rgba(237,232,216,0.5), rgba(237,232,216,0.35), transparent) !important;
+  background: linear-gradient(90deg, transparent, rgba(212,184,150,0.2), rgba(212,184,150,0.45), rgba(212,184,150,0.2), transparent) !important;
 }
-/* sparkles in noir mode: dim them to be atmospheric not cheerful */
+/* Sparkles: sepia dim — atmospheric, not festive */
 [data-theme="noir"] .sparkle {
-  color: rgba(237, 232, 216, 0.5) !important;
+  color: rgba(212, 184, 150, 0.45) !important;
 }
-/* Pill button in noir: outlined cream */
+/* Pill button: warm sepia fill — old-film title card palette */
 [data-theme="noir"] .pill-button {
-  background: rgba(237, 232, 216, 0.9) !important;
-  color: #111010 !important;
-  border-color: rgba(237, 232, 216, 0.9) !important;
+  background: rgba(212, 184, 150, 0.88) !important;
+  color: #0D0C0C !important;
+  border-color: rgba(212, 184, 150, 0.88) !important;
+  font-style: normal !important;
 }
 [data-theme="noir"] .pill-button:hover {
-  background: rgba(237, 232, 216, 1) !important;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important;
+  background: rgba(212, 184, 150, 1) !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.5) !important;
+}
+[data-theme="noir"] .pill-button-outline {
+  border-color: rgba(212, 184, 150, 0.45) !important;
+  color: rgba(212, 184, 150, 0.9) !important;
+  font-style: normal !important;
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -539,17 +557,17 @@ h1, h2, h3, h4, h5, h6 {
   color: #111 !important;
   font-family: 'Bebas Neue', 'Impact', 'Arial Black', sans-serif !important;
 }
-/* Input shell: hard black rule + Bauhaus offset shadow */
+/* Input shell: black frame + red shadow — three primaries in one element */
 [data-theme="bauhaus"] .admin-input-shell {
   border: 2px solid #111 !important;
   border-radius: 0 !important;
   background: #fff !important;
-  box-shadow: 5px 5px 0 #111 !important;
+  box-shadow: 5px 5px 0 #C8001F !important;
   transition: box-shadow 0.15s ease, transform 0.15s ease !important;
 }
 [data-theme="bauhaus"] .admin-input-shell:focus-within {
-  box-shadow: 8px 8px 0 #111 !important;
-  transform: translate(-2px, -2px) !important;
+  box-shadow: 9px 9px 0 #C8001F !important;
+  transform: translate(-3px, -3px) !important;
 }
 
 /* ── SWISS admin: stripped grid, pure typographic hierarchy ── */
@@ -571,7 +589,7 @@ h1, h2, h3, h4, h5, h6 {
   padding-left: 0 !important;
 }
 [data-theme="swiss"] .admin-input-shell:focus-within {
-  border-bottom-color: var(--ink) !important;
+  border-bottom-color: #EC1D24 !important;
 }
 
 /* ── JAPANESE admin: generous space, considered quietude ── */
@@ -593,19 +611,32 @@ h1, h2, h3, h4, h5, h6 {
   border-color: rgba(43, 45, 107, 0.5) !important;
 }
 
-/* ── NOIR admin: cinematic depth, dramatic chiaroscuro ── */
-/* Title: Playfair with a subtle halo glow — film title card treatment */
+/* ── NOIR admin: classic film title card — italic Playfair, sepia glow ── */
+/* Title: Playfair italic with layered amber halo — like a projector title card */
 [data-theme="noir"] .admin-console-title {
-  text-shadow: 0 0 40px rgba(237, 232, 216, 0.18), 0 2px 24px rgba(237, 232, 216, 0.08) !important;
-  letter-spacing: 0.06em !important;
+  font-style: italic !important;
+  font-size: clamp(2.8rem, 9vw, 4.5rem) !important;
+  line-height: 1.05 !important;
+  letter-spacing: 0.07em !important;
+  text-shadow:
+    0 0 80px rgba(212, 184, 150, 0.22),
+    0 0 30px rgba(212, 184, 150, 0.14),
+    0 2px 8px rgba(0,0,0,0.9) !important;
 }
-/* Input shell: dark glass surface, deep shadow */
+/* Input shell: smoked-glass speakeasy surface */
 [data-theme="noir"] .admin-input-shell {
-  background: rgba(28, 27, 27, 0.95) !important;
-  border-color: rgba(237, 232, 216, 0.1) !important;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(237,232,216,0.04) !important;
+  background: rgba(26, 24, 23, 0.98) !important;
+  border: 1px solid rgba(212, 184, 150, 0.12) !important;
+  border-radius: 4px !important;
+  box-shadow:
+    0 8px 40px rgba(0,0,0,0.7),
+    inset 0 1px 0 rgba(212,184,150,0.05),
+    inset 0 -1px 0 rgba(0,0,0,0.4) !important;
 }
 [data-theme="noir"] .admin-input-shell:focus-within {
-  border-color: rgba(237, 232, 216, 0.22) !important;
-  box-shadow: 0 4px 32px rgba(0,0,0,0.65), inset 0 1px 0 rgba(237,232,216,0.06) !important;
+  border-color: rgba(212, 184, 150, 0.28) !important;
+  box-shadow:
+    0 8px 48px rgba(0,0,0,0.8),
+    0 0 24px rgba(212,184,150,0.07),
+    inset 0 1px 0 rgba(212,184,150,0.07) !important;
 }
