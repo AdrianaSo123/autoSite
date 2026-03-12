@@ -47,11 +47,11 @@ export default function AdminChat() {
     return (
         <div
             className="w-full flex flex-col relative overflow-hidden"
-            style={{ height: "calc(100dvh - 180px)", minHeight: "480px" }}
+            style={{ height: "calc(100dvh - 210px)", minHeight: "480px" }}
         >
             {/* Messages area */}
             <div
-                className="flex-1 overflow-y-auto px-2 md:px-8 pb-6 space-y-6"
+                className="flex-1 overflow-y-auto px-2 md:px-8 pb-6 space-y-6 scrollbar-hide"
                 role="log"
                 aria-live="polite"
                 aria-relevant="additions text"
