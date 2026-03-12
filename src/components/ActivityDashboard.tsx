@@ -88,7 +88,7 @@ export default function ActivityDashboard() {
             >
                 <h3
                     className="text-sm font-semibold"
-                    style={{ fontFamily: "'Playfair Display', serif", color: "var(--ink)" }}
+                    style={{ fontFamily: "var(--font-heading)", color: "var(--ink)" }}
                 >
                     ✦ Platform Activity
                 </h3>
@@ -168,7 +168,7 @@ function MetricCard({ label, value, icon }: { label: string; value: number; icon
             <span className="text-xl">{icon}</span>
             <p
                 className="text-2xl font-semibold mt-1"
-                style={{ fontFamily: "'Playfair Display', serif", color: "var(--ink)" }}
+                style={{ fontFamily: "var(--font-heading)", color: "var(--ink)" }}
             >
                 {value}
             </p>

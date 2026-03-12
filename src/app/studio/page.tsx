@@ -24,7 +24,7 @@ export default async function StudioPage() {
                     <span className="sparkle text-sm">✦</span>
                     <h1
                         className="text-2xl font-semibold"
-                        style={{ fontFamily: "'Playfair Display', serif", color: "var(--ink)" }}
+                        style={{ fontFamily: "var(--font-heading)", color: "var(--ink)" }}
                     >
                         Studio
                     </h1>

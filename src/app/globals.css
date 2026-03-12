@@ -53,6 +53,7 @@
   --radius-input: 0;
   --radius-card: 0;
   --border-strength: 2px;
+  --chat-bg-gradient: linear-gradient(180deg, rgba(245,245,245,0) 0%, rgba(245,245,245,0.95) 35%, rgba(245,245,245,1) 100%);
 }
 
 /* Force sharp corners for all elements in Bauhaus */
@@ -108,6 +109,7 @@
   --radius-input: 2px;
   --radius-card: 2px;
   --border-strength: 1px;
+  --chat-bg-gradient: linear-gradient(180deg, rgba(248,248,248,0) 0%, rgba(248,248,248,0.95) 35%, rgba(248,248,248,1) 100%);
 }
 
 /* Swiss: near-zero rounding on interactive elements */
@@ -136,6 +138,7 @@
   --radius-input: 4px;
   --radius-card: 6px;
   --border-strength: 1px;
+  --chat-bg-gradient: linear-gradient(180deg, rgba(253,251,248,0) 0%, rgba(253,251,248,0.95) 35%, rgba(253,251,248,1) 100%);
 }
 
 * {
@@ -520,4 +523,89 @@ h1, h2, h3, h4, h5, h6 {
 [data-theme="noir"] .pill-button:hover {
   background: rgba(237, 232, 216, 1) !important;
   box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important;
+}
+
+/* ════════════════════════════════════════════════════════════
+   ADMIN CONSOLE — PER-THEME DEEP POLISH
+   Expert-level aesthetic for each design system
+   ════════════════════════════════════════════════════════════ */
+
+/* ── BAUHAUS admin: poster-scale heading, architectural input ── */
+/* Dramatically scale the console title — Bauhaus workshops used monumental type */
+[data-theme="bauhaus"] .admin-console-title {
+  font-size: clamp(3.5rem, 12vw, 5.5rem) !important;
+  line-height: 0.88 !important;
+  letter-spacing: 0.03em !important;
+  color: #111 !important;
+  font-family: 'Bebas Neue', 'Impact', 'Arial Black', sans-serif !important;
+}
+/* Input shell: hard black rule + Bauhaus offset shadow */
+[data-theme="bauhaus"] .admin-input-shell {
+  border: 2px solid #111 !important;
+  border-radius: 0 !important;
+  background: #fff !important;
+  box-shadow: 5px 5px 0 #111 !important;
+  transition: box-shadow 0.15s ease, transform 0.15s ease !important;
+}
+[data-theme="bauhaus"] .admin-input-shell:focus-within {
+  box-shadow: 8px 8px 0 #111 !important;
+  transform: translate(-2px, -2px) !important;
+}
+
+/* ── SWISS admin: stripped grid, pure typographic hierarchy ── */
+/* Oversized headline — Swiss style maximises typographic contrast */
+[data-theme="swiss"] .admin-console-title {
+  font-size: clamp(3.5rem, 12vw, 5.5rem) !important;
+  letter-spacing: -0.035em !important;
+  line-height: 0.88 !important;
+  color: #0A0A0A !important;
+  font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif !important;
+}
+/* Input shell: Swiss "form field" — only a bottom rule, no container */
+[data-theme="swiss"] .admin-input-shell {
+  border: none !important;
+  border-bottom: 2px solid #0A0A0A !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding-left: 0 !important;
+}
+[data-theme="swiss"] .admin-input-shell:focus-within {
+  border-bottom-color: var(--ink) !important;
+}
+
+/* ── JAPANESE admin: generous space, considered quietude ── */
+/* Title: wider tracked, light weight — the Japanese preference for refined restraint */
+[data-theme="japanese"] .admin-console-title {
+  letter-spacing: 0.22em !important;
+  font-weight: 400 !important;
+  line-height: 1.4 !important;
+  color: var(--ink) !important;
+}
+/* Input shell: hairline border, no shadow — "less is more" */
+[data-theme="japanese"] .admin-input-shell {
+  border: 1px solid rgba(43, 45, 107, 0.2) !important;
+  border-radius: 3px !important;
+  background: var(--cream-light) !important;
+  box-shadow: none !important;
+}
+[data-theme="japanese"] .admin-input-shell:focus-within {
+  border-color: rgba(43, 45, 107, 0.5) !important;
+}
+
+/* ── NOIR admin: cinematic depth, dramatic chiaroscuro ── */
+/* Title: Playfair with a subtle halo glow — film title card treatment */
+[data-theme="noir"] .admin-console-title {
+  text-shadow: 0 0 40px rgba(237, 232, 216, 0.18), 0 2px 24px rgba(237, 232, 216, 0.08) !important;
+  letter-spacing: 0.06em !important;
+}
+/* Input shell: dark glass surface, deep shadow */
+[data-theme="noir"] .admin-input-shell {
+  background: rgba(28, 27, 27, 0.95) !important;
+  border-color: rgba(237, 232, 216, 0.1) !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(237,232,216,0.04) !important;
+}
+[data-theme="noir"] .admin-input-shell:focus-within {
+  border-color: rgba(237, 232, 216, 0.22) !important;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.65), inset 0 1px 0 rgba(237,232,216,0.06) !important;
 }
