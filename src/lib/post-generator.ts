@@ -77,8 +77,15 @@ Rules:
             return { success: false, error: "No content generated." };
         }
 
+        // Ensure the frontmatter title is always quoted to prevent YAML parse errors
+        // (e.g. titles containing colons break unquoted YAML values)
+        const sanitizedContent = markdownContent.replace(
+            /^(title:\s*)(?!")(.*?)(\s*)$/m,
+            (_match, key, value, trailing) => `${key}"${value.replace(/"/g, '\\"')}"${trailing}`
+        );
+
         // Extract title from frontmatter
-        const titleMatch = markdownContent.match(/title:\s*"([^"]+)"/);
+        const titleMatch = sanitizedContent.match(/title:\s*"([^"]+)"/);
         const title = titleMatch ? titleMatch[1] : "untitled-post";
 
         // Create slug from title
@@ -95,7 +102,7 @@ Rules:
         }
 
         const filePath = path.join(postsDir, `${slug}.md`);
-        fs.writeFileSync(filePath, markdownContent);
+        fs.writeFileSync(filePath, sanitizedContent);
 
         return {
             success: true,
