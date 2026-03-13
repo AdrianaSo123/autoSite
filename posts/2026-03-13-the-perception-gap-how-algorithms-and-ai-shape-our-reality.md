@@ -1,5 +1,5 @@
 ---
-title: The Perception Gap: How Algorithms and AI Shape Our Reality
+title: "The Perception Gap: How Algorithms and AI Shape Our Reality"
 date: 2026-03-13
 slug: 2026-03-13-the-perception-gap-how-algorithms-and-ai-shape-our-reality
 tags: ["Perception","Social Media","AI","Language"]
