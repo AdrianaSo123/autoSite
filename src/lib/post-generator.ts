@@ -81,7 +81,7 @@ Rules:
         // (e.g. titles containing colons break unquoted YAML values)
         const sanitizedContent = markdownContent.replace(
             /^(title:\s*)(?!")(.*?)(\s*)$/m,
-            (_match, key, value, trailing) => `${key}"${value.replace(/"/g, '\\"')}"${trailing}`
+            (_match: string, key: string, value: string, trailing: string) => `${key}"${value.replace(/"/g, '\\"')}"${trailing}`
         );
 
         // Extract title from frontmatter
