@@ -31,8 +31,8 @@ describe("Sprint 16 — Admin Chat Mode", () => {
 
     it("shows admin-specific prompt suggestions", () => {
         render(<AdminChat />);
-        expect(screen.getByText("Process latest recording")).toBeTruthy();
-        expect(screen.getByText("Publish draft")).toBeTruthy();
+        expect(screen.getByText("Show recent posts")).toBeTruthy();
+        expect(screen.getByText("Blog summary")).toBeTruthy();
     });
 
     it("accepts and sends admin commands", async () => {

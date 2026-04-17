@@ -62,7 +62,7 @@ describe("searchBlogPosts MCP Tool", () => {
 
     it("formats results as a readable string", () => {
         const results = [
-            { slug: "test", title: "Test Post", date: "2026-03-06", excerpt: "Test." },
+            { slug: "test", title: "Test Post", date: "2026-03-06", excerpt: "Test.", score: 10 },
         ];
         const formatted = formatSearchResults("test", results);
         expect(formatted).toContain("Found 1 post(s)");

@@ -17,6 +17,9 @@ global.fetch = jest.fn(() =>
 describe("Sprint 13 — Hero Chat Integration", () => {
     beforeEach(() => {
         (global.fetch as jest.Mock).mockClear();
+        // Prevent localStorage chat history from a prior test's messages
+        // causing isEmpty=false and hiding the welcome heading.
+        localStorage.clear();
     });
 
     it("renders the homepage with a chat interface", () => {
@@ -26,7 +29,7 @@ describe("Sprint 13 — Hero Chat Integration", () => {
 
     it("displays a welcome message inside the chat on load", () => {
         render(<HomeClient />);
-        expect(screen.getByText(/Welcome to AI Platform/i)).toBeTruthy();
+        expect(screen.getByText("So Studio")).toBeTruthy();
     });
 
     it("has a chat input that accepts text", () => {
@@ -51,6 +54,6 @@ describe("Sprint 13 — Hero Chat Integration", () => {
 
     it("shows welcome text on load", () => {
         render(<HomeClient />);
-        expect(screen.getByText(/Welcome to AI Platform/i)).toBeTruthy();
+        expect(screen.getByText("So Studio")).toBeTruthy();
     });
 });

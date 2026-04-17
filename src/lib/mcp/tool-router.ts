@@ -267,6 +267,4 @@ async function llmToolSelection(message: string, tools: MCPTool[]): Promise<stri
         console.error("LLM tool selection error:", error);
         return "";
     }
-
-    return "";
 }

@@ -34,7 +34,16 @@ export async function POST(request: NextRequest) {
             fs.mkdirSync(uploadsDir, { recursive: true });
         }
 
-        const fileName = `${Date.now()}-${file.name}`;
+        // Sanitize the original filename to prevent path traversal:
+        //  1. path.basename strips any directory components (e.g. "../../etc/passwd" → "passwd")
+        //  2. Replace all characters outside a safe allowlist with underscores
+        //  3. Truncate to a reasonable length
+        const rawName = file.name ?? "upload";
+        const safeBaseName = path
+            .basename(rawName)
+            .replace(/[^a-zA-Z0-9._-]/g, "_")
+            .slice(0, 100);
+        const fileName = `${Date.now()}-${safeBaseName}`;
         const filePath = path.join(uploadsDir, fileName);
         const buffer = Buffer.from(await file.arrayBuffer());
         fs.writeFileSync(filePath, buffer);

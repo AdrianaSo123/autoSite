@@ -21,14 +21,14 @@ describe("Sprint 25 — Conversational Layout", () => {
 
     it("shows hero welcome message inside the chat", () => {
         render(<HomeClient />);
-        expect(screen.getByText(/conversational publishing platform/i)).toBeTruthy();
+        expect(screen.getByText("So Studio")).toBeTruthy();
     });
 
     it("displays prompt suggestion buttons on load", () => {
         render(<HomeClient />);
         expect(screen.getByText("Show recent posts")).toBeTruthy();
-        expect(screen.getByText("What is this project?")).toBeTruthy();
-        expect(screen.getByText("Help")).toBeTruthy();
+        expect(screen.getByText("Explain AI agents")).toBeTruthy();
+        expect(screen.getByText("What is this studio?")).toBeTruthy();
     });
 
     it("sends a message when clicking a prompt suggestion", async () => {
@@ -50,7 +50,7 @@ describe("Sprint 25 — Conversational Layout", () => {
         fireEvent.click(sendBtn);
 
         await waitFor(() => {
-            expect(screen.queryByText(/conversational publishing platform/i)).toBeNull();
+            expect(screen.queryByText("So Studio")).toBeNull();
         });
     });
 

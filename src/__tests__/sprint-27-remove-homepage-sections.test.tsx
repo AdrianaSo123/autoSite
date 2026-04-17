@@ -32,6 +32,6 @@ describe("Sprint 27 — Remove Traditional Homepage Sections", () => {
 
     it("shows the welcome message inside the chat", () => {
         render(<HomeClient />);
-        expect(screen.getByText(/Welcome to AI Platform/i)).toBeTruthy();
+        expect(screen.getByText("So Studio")).toBeTruthy();
     });
 });

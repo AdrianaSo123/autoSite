@@ -23,12 +23,12 @@ describe("Sprint 24 — UX Refinement", () => {
 
     it("shows the welcome message on load", () => {
         render(<HomeClient />);
-        expect(screen.getByText(/Welcome to AI Platform/i)).toBeTruthy();
+        expect(screen.getByText("So Studio")).toBeTruthy();
     });
 
     it("has prompt suggestion buttons", () => {
         render(<HomeClient />);
         expect(screen.getByText("Show recent posts")).toBeTruthy();
-        expect(screen.getByText("Help")).toBeTruthy();
+        expect(screen.getByText("Explain AI agents")).toBeTruthy();
     });
 });

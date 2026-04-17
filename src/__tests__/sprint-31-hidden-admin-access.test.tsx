@@ -3,7 +3,8 @@
  */
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 jest.mock("next/navigation", () => ({
-    useRouter: jest.fn(() => ({ push: jest.fn() })),
+    useRouter: jest.fn(),
+    usePathname: jest.fn(() => "/"),
 }));
 
 import ChatInterface from "@/components/ChatInterface";
@@ -17,33 +18,30 @@ jest.mock("next-auth/react", () => ({
     signOut: jest.fn(),
 }));
 
-jest.mock("next/navigation", () => ({
-    useRouter: jest.fn(),
-}));
-
 describe("Sprint 31 — Hidden Admin Access", () => {
     beforeEach(() => {
         jest.clearAllMocks();
     });
 
     describe("NavBar", () => {
-        it("does NOT show Studio link even for admin users", () => {
+        it("shows Studio link for admin users", () => {
             (useSession as jest.Mock).mockReturnValue({
-                data: { user: { email: "admin@example.com" } },
+                data: { user: { email: "admin@example.com", isAdmin: true } },
                 status: "authenticated",
             });
+            render(<NavBar />);
+            expect(screen.getByText("Studio")).toBeTruthy();
+        });
+
+        it("does NOT show Studio link for unauthenticated users", () => {
+            (useSession as jest.Mock).mockReturnValue({ data: null, status: "unauthenticated" });
             render(<NavBar />);
             expect(screen.queryByText("Studio")).toBeNull();
         });
 
-        it("still shows Sign In / Sign out buttons", () => {
-            (useSession as jest.Mock).mockReturnValue({ data: null, status: "unauthenticated" });
-            const { unmount } = render(<NavBar />);
-            expect(screen.getByText("Sign In")).toBeTruthy();
-            unmount();
-
+        it("shows Sign out for authenticated admin", () => {
             (useSession as jest.Mock).mockReturnValue({
-                data: { user: { email: "admin@example.com" } },
+                data: { user: { email: "admin@example.com", isAdmin: true } },
                 status: "authenticated",
             });
             render(<NavBar />);

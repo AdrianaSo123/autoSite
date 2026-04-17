@@ -19,6 +19,25 @@ export function isAdmin(email: string | null | undefined): boolean {
     return email === ADMIN_EMAIL;
 }
 
+/**
+ * Resolve the auth secret. Throws at startup in production if AUTH_SECRET is
+ * not set — a hardcoded fallback in production allows JWT forgery by anyone
+ * who sees the source code (OWASP A02: Cryptographic Failures).
+ */
+function resolveAuthSecret(): string {
+    const secret = process.env.AUTH_SECRET;
+    if (!secret) {
+        if (process.env.NODE_ENV === "production") {
+            throw new Error(
+                "AUTH_SECRET environment variable is not set. " +
+                "This is required in production to sign JWT tokens securely."
+            );
+        }
+        return "fallback_secret_for_development_only";
+    }
+    return secret;
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
     providers: [
         // Pure Google OAuth
@@ -41,7 +60,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             return session;
         }
     },
-    secret: process.env.AUTH_SECRET || "fallback_secret_for_development_only",
+    secret: resolveAuthSecret(),
 });
 
 

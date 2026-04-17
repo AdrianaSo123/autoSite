@@ -28,6 +28,7 @@ interface ChatResponse {
     message?: string;
     action?: string;
     suggestedActions?: string[];
+    postResults?: Array<{ title: string; slug: string; date: string }>;
 }
 
 const MAX_HISTORY_MESSAGES = 20;
@@ -76,6 +77,10 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
     const [isLoading, setIsLoading] = useState(false);
     const [hasNotified, setHasNotified] = useState(false);
     const [hydrated, setHydrated] = useState(false);
+    // Stores the last set of post results returned by the server so they can
+    // be echoed back on the next request, enabling "open 1"/"open 2" to work
+    // correctly across serverless invocations.
+    const [postResults, setPostResults] = useState<Array<{ title: string; slug: string; date: string }>>([]);
     const messagesEndRef = useRef<HTMLDivElement>(null!);
 
     // After mount, restore from localStorage (avoids SSR hydration mismatch)
@@ -149,6 +154,7 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
                     body: JSON.stringify({
                         message: content.slice(0, MAX_MESSAGE_CHARS),
                         history,
+                        postResults,
                     }),
                 });
                 const data: ChatResponse = await response.json();
@@ -159,6 +165,10 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
                         "I'm not sure how to respond to that. Try saying \"help\" to see what I can do.",
                     data.suggestedActions?.slice(0, 3)
                 );
+
+                if (data.postResults) {
+                    setPostResults(data.postResults);
+                }
 
                 if (data.action && onAction) {
                     onAction(data.action);
@@ -171,7 +181,7 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
                 setIsLoading(false);
             }
         },
-        [input, isLoading, hasNotified, messages, onFirstMessage, onAction, appendAssistantMessage]
+        [input, isLoading, hasNotified, messages, onFirstMessage, onAction, appendAssistantMessage, postResults]
     );
 
     const handleKeyDown = useCallback(
@@ -214,6 +224,7 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
         setMessages([]);
         setInput("");
         setHasNotified(false);
+        setPostResults([]);
     }, []);
 
     return {

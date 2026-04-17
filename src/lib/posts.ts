@@ -36,7 +36,19 @@ function parsePostFile(slug: string, raw: string): Post {
 
 /** Read a single .md file and parse it, or return undefined if missing. */
 function readPostFile(slug: string): Post | undefined {
+    // Reject slugs containing path separators or traversal sequences to
+    // prevent reading files outside postsDirectory (OWASP A01 path traversal).
+    if (!slug || /[/\\]/.test(slug) || slug.includes("..")) return undefined;
+
     const filePath = path.join(postsDirectory, `${slug}.md`);
+
+    // Double-check the resolved path is strictly within postsDirectory.
+    const resolvedDir = path.resolve(postsDirectory);
+    const resolvedFile = path.resolve(filePath);
+    if (!resolvedFile.startsWith(resolvedDir + path.sep) && resolvedFile !== resolvedDir) {
+        return undefined;
+    }
+
     if (!fs.existsSync(filePath)) return undefined;
     return parsePostFile(slug, fs.readFileSync(filePath, "utf8"));
 }

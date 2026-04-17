@@ -3,7 +3,7 @@ import { routeCommand } from "@/lib/commands";
 import { routeToTool } from "@/lib/mcp/tool-router";
 import { auth } from "@/lib/auth";
 import { logActivity } from "@/lib/activity-log";
-import { sessionState } from "@/lib/mcp/session";
+import { sessionState, runWithSession, type PostResultSubset } from "@/lib/mcp/session";
 
 type IncomingMessage = {
     role: "user" | "assistant";
@@ -13,6 +13,7 @@ type IncomingMessage = {
 type ChatRequestBody = {
     message?: unknown;
     history?: unknown;
+    postResults?: unknown;
 };
 
 type ChatCompletionPayload = {
@@ -24,6 +25,7 @@ type ChatApiResponse = {
     message: string;
     action: string | null;
     suggestedActions?: string[];
+    postResults?: PostResultSubset[];
 };
 
 type SuggestionContext = "blog_results" | "concept" | "about_studio" | "general";
@@ -160,12 +162,35 @@ function toResponse(
         ? buildSuggestions(messageForSuggestions, reply, suggestionContext)
         : [];
 
+    // Capture post results from the request-scoped session so the client
+    // can echo them back on the next request, enabling cross-request
+    // session continuity (e.g. "open 1") in serverless environments.
+    const postResults = sessionState.lastPostResults;
+
     return {
         reply,
         message: reply,
         action,
         ...(suggestedActions.length > 0 ? { suggestedActions } : {}),
+        ...(postResults.length > 0 ? { postResults } : {}),
     };
+}
+
+function normalizePostResults(raw: unknown): PostResultSubset[] {
+    if (!Array.isArray(raw)) return [];
+    return raw
+        .filter((item): item is Record<string, unknown> => !!item && typeof item === "object")
+        .slice(0, 10)
+        .map((item) => ({
+            title: typeof item.title === "string" ? item.title.slice(0, 200) : "",
+            // Sanitize slug — strip any non-safe characters to prevent path traversal
+            // via client-echoed postResults
+            slug: typeof item.slug === "string"
+                ? item.slug.replace(/[^a-zA-Z0-9._-]/g, "").slice(0, 200)
+                : "",
+            date: typeof item.date === "string" ? item.date.slice(0, 20) : "",
+        }))
+        .filter((item) => item.title && item.slug);
 }
 
 function normalizeHistory(raw: unknown): IncomingMessage[] {
@@ -252,14 +277,21 @@ async function summarizeToolResult(
 }
 
 export async function POST(request: NextRequest) {
+    const body = (await request.json().catch(() => ({}))) as ChatRequestBody;
+    const message = typeof body.message === "string" ? body.message.trim() : "";
+
+    if (!message) {
+        return NextResponse.json({ reply: "Please send a message." }, { status: 400 });
+    }
+
+    const incomingPostResults = normalizePostResults(body.postResults);
+
+    // Wrap the entire handler in a request-scoped session context.
+    // This isolates sessionState.lastPostResults to this request only,
+    // preventing cross-user contamination and ensuring serverless
+    // cold starts always begin with the client-supplied post context.
+    return runWithSession(incomingPostResults, async () => {
     try {
-        const body = (await request.json().catch(() => ({}))) as ChatRequestBody;
-        const message = typeof body.message === "string" ? body.message.trim() : "";
-
-        if (!message) {
-            return NextResponse.json({ reply: "Please send a message." }, { status: 400 });
-        }
-
         const history = normalizeHistory(body.history);
         const session = await auth();
         const isAdmin = !!session?.user?.isAdmin;
@@ -286,8 +318,11 @@ export async function POST(request: NextRequest) {
             console.error("Tool routing error:", error);
         }
 
-        // 2b. Blog-intent with no results → grounded "no posts" reply (prevents LLM hallucination)
-        const hasBlogIntent = /(post|posts|article|articles|blog|written|published|search|find)/.test(message.toLowerCase());
+        // 2b. Blog-intent with no results → grounded "no posts" reply (prevents LLM hallucination).
+        // Regex is intentionally narrow: only fire when the message unambiguously
+        // seeks blog content. Broad terms like "search" or "find" alone are excluded
+        // to avoid false-positives on unrelated questions.
+        const hasBlogIntent = /\b(blog|posts?\s+about|articles?\s+about|show\s+posts?|recent\s+posts?|latest\s+posts?|find\s+posts?|search\s+posts?|any\s+posts?|your\s+posts?|your\s+articles?|what\s+have\s+you\s+written|what.{0,30}published)\b/i.test(message);
         if (hasBlogIntent && !toolResult) {
             const noResultReply = "I searched the blog but couldn't find any posts matching that topic. Try **Show recent posts** to see what's been published, or ask about a different topic.";
             return NextResponse.json(toResponse(noResultReply, null, message, "blog_results"));
@@ -363,4 +398,5 @@ export async function POST(request: NextRequest) {
             { status: 500 }
         );
     }
+    }); // end runWithSession
 }
