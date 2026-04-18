@@ -24,37 +24,75 @@ async function buildIndex(): Promise<void> {
         process.exit(0);
     }
 
-    console.log("Building RAG index...\n");
+    console.log("Building RAG index (Incremental Support)...\n");
 
     const posts = getAllPosts();
-    console.log(`Found ${posts.length} post(s)`);
+    console.log(`Found ${posts.length} post(s) in source`);
 
-    if (posts.length === 0) {
-        writeIndex([]);
-        console.log("Empty index written (no posts).");
-        return;
+    // Load existing index for incremental matching
+    let existingIndex: EmbeddedChunk[] = [];
+    if (fs.existsSync(INDEX_PATH)) {
+        try {
+            existingIndex = JSON.parse(fs.readFileSync(INDEX_PATH, "utf8"));
+            console.log(`Loaded existing index with ${existingIndex.length} chunks`);
+        } catch (e) {
+            console.warn("Could not parse existing index, starting fresh.");
+        }
     }
 
-    // Chunk all posts
-    const allChunks = posts.flatMap((post) =>
-        chunkPost(post.slug, post.title, post.date, post.content)
-    );
-    console.log(`Generated ${allChunks.length} chunk(s)`);
+    const finalEmbeddedChunks: EmbeddedChunk[] = [];
+    const chunksToEmbed: any[] = []; // Temporary holding for new/changed chunks
+    
+    let reusedPostsCount = 0;
+    let newPostsCount = 0;
 
-    // Embed all chunks (single batch)
-    console.log("Generating embeddings...");
-    const embedded = await embedChunks(allChunks);
+    for (const post of posts) {
+        // Generate new chunks to get the current contentHash
+        const currentChunks = chunkPost(post.slug, post.title, post.date, post.content);
+        if (currentChunks.length === 0) continue;
 
-    // Full rebuild — stale entries removed by design
-    writeIndex(embedded);
+        const currentHash = currentChunks[0].contentHash;
+
+        // Check if this post exists in the old index with the SAME hash
+        const existingForPost = existingIndex.filter(c => c.slug === post.slug);
+        const hashMatches = existingForPost.length > 0 && existingForPost[0].contentHash === currentHash;
+
+        if (hashMatches) {
+            // Reuse existing embeddings
+            finalEmbeddedChunks.push(...existingForPost);
+            reusedPostsCount++;
+        } else {
+            // Mark for embedding
+            chunksToEmbed.push(...currentChunks);
+            newPostsCount++;
+        }
+    }
+
+    console.log(`  Reusing: ${reusedPostsCount} post(s)`);
+    console.log(`  Update:  ${newPostsCount} post(s) to be embedded`);
+
+    if (chunksToEmbed.length > 0) {
+        console.log(`\nGenerating embeddings for ${chunksToEmbed.length} new/changed chunk(s)...`);
+        const newlyEmbedded = await embedChunks(chunksToEmbed);
+        finalEmbeddedChunks.push(...newlyEmbedded);
+    }
+
+    // Sort to keep index stable (by slug then chunk index)
+    finalEmbeddedChunks.sort((a, b) => {
+        if (a.slug !== b.slug) return a.slug.localeCompare(b.slug);
+        return a.chunkIndex - b.chunkIndex;
+    });
+
+    writeIndex(finalEmbeddedChunks);
 
     const fileSize = fs.statSync(INDEX_PATH).size;
     const sizeMB = (fileSize / 1024 / 1024).toFixed(2);
     console.log(`\nIndex written to ${INDEX_PATH}`);
-    console.log(`  Posts:  ${posts.length}`);
-    console.log(`  Chunks: ${embedded.length}`);
-    console.log(`  Size:   ${sizeMB} MB`);
+    console.log(`  Total Posts:  ${posts.length}`);
+    console.log(`  Total Chunks: ${finalEmbeddedChunks.length}`);
+    console.log(`  Total Size:   ${sizeMB} MB`);
 }
+
 
 function writeIndex(entries: EmbeddedChunk[]): void {
     const dir = path.dirname(INDEX_PATH);

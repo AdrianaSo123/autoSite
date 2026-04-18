@@ -9,6 +9,8 @@
 // Types
 // ---------------------------------------------------------------------------
 
+import crypto from "crypto";
+
 export interface Chunk {
     id: string;
     text: string;
@@ -16,7 +18,9 @@ export interface Chunk {
     title: string;
     date: string;
     chunkIndex: number;
+    contentHash: string; // Hash of the raw post content
 }
+
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -35,6 +39,13 @@ export { MAX_CHUNK_CHARS, MIN_CHUNK_CHARS, OVERLAP_CHARS };
 // ---------------------------------------------------------------------------
 
 /**
+ * Generate a SHA-256 hash of a string.
+ */
+export function computeHash(content: string): string {
+    return crypto.createHash("sha256").update(content).digest("hex");
+}
+
+/**
  * Split a post's markdown content into overlapping chunks.
  * Prefers paragraph and heading boundaries.
  */
@@ -46,7 +57,9 @@ export function chunkPost(
 ): Chunk[] {
     if (!content || content.trim().length === 0) return [];
 
+    const contentHash = computeHash(content);
     const sections = splitIntoSections(content);
+
     if (sections.length === 0) return [];
 
     // Phase 1: merge sections into raw chunks respecting size limits
@@ -68,7 +81,9 @@ export function chunkPost(
             title,
             date,
             chunkIndex: i,
+            contentHash,
         };
+
     });
 }
 

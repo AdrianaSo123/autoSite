@@ -154,18 +154,18 @@ export default function BlogChatFAB() {
         }
         : {
             position: "fixed",
-            left: "50%",
-            bottom: open ? 0 : "-520px",
-            transform: "translateX(-50%)",
-            width: "min(480px, 100vw)",
-            height: 480,
+            right: 24,
+            bottom: open ? 24 : -520,
+            width: "min(420px, 100vw - 48px)",
+            height: 540,
             maxHeight: "80vh",
-            borderRadius: "16px 16px 0 0",
+            borderRadius: "16px",
             border: "1.5px solid var(--ink-border)",
-            borderBottom: "none",
-            transition: "bottom 0.3s cubic-bezier(0.4,0,0.2,1)",
+            transition: "all 0.35s cubic-bezier(0.4,0,0.2,1)",
             zIndex: 60,
+            boxShadow: "0 12px 48px rgba(0,0,0,0.15)",
         };
+
 
     return (
         <>
