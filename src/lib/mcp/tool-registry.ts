@@ -7,6 +7,7 @@
 
 import { getAllPosts } from "@/lib/posts";
 import { searchBlogPosts, formatSearchResults } from "@/lib/mcp/search-blog-posts";
+import { semanticSearchPosts } from "@/lib/mcp/semantic-search-posts";
 import { sessionState } from "@/lib/mcp/session";
 import { THEMES, type ThemeName } from "@/lib/theme";
 
@@ -125,6 +126,17 @@ export const toolRegistry: MCPTool[] = [
                 const content = post.content?.slice(0, 3000).trim() ?? post.excerpt;
                 return `📄 **${post.title}** (${post.date})\n\n${content}`;
             }, "summarizePost"),
+    },
+    {
+        name: "semanticSearchPosts",
+        description: "Semantically search blog posts by meaning, not just keywords.",
+        access: "public" as ToolAccess,
+        execute: (params) =>
+            safeExecute(async () => {
+                const query = (params?.query as string) || "";
+                if (!query) return "Please provide a search term.";
+                return semanticSearchPosts(query);
+            }, "semanticSearchPosts"),
     },
 ];
 

@@ -118,7 +118,22 @@ export async function routeToTool(
                 return "";
             }
 
-            return searchTool.execute({ query: meaningfulWords.join(" ") });
+            const keywordResult = await searchTool.execute({ query: meaningfulWords.join(" ") });
+
+            // Escalate to semantic search if keyword found nothing
+            const semanticTool = tools.find((t) => t.name === "semanticSearchPosts");
+            if (semanticTool && keywordResult.includes("No posts found")) {
+                try {
+                    const semanticResult = await semanticTool.execute({ query: meaningfulWords.join(" ") });
+                    if (!semanticResult.includes("No posts found")) {
+                        return semanticResult;
+                    }
+                } catch {
+                    // Semantic search failed — return keyword result
+                }
+            }
+
+            return keywordResult;
         }
     }
 

@@ -17,6 +17,7 @@ export interface PostResultSubset {
 
 interface SessionStore {
     lastPostResults: PostResultSubset[];
+    lastRetrievedChunks: string[];
 }
 
 const storage = new AsyncLocalStorage<SessionStore>();
@@ -32,6 +33,15 @@ export const sessionState = {
         }
         // Outside a runWithSession context (e.g. tests): silently no-op.
     },
+    get lastRetrievedChunks(): string[] {
+        return storage.getStore()?.lastRetrievedChunks ?? [];
+    },
+    set lastRetrievedChunks(value: string[]) {
+        const store = storage.getStore();
+        if (store) {
+            store.lastRetrievedChunks = value;
+        }
+    },
 };
 
 /**
@@ -43,5 +53,5 @@ export function runWithSession<T>(
     initial: PostResultSubset[],
     fn: () => Promise<T>
 ): Promise<T> {
-    return storage.run({ lastPostResults: [...initial] }, fn);
+    return storage.run({ lastPostResults: [...initial], lastRetrievedChunks: [] }, fn);
 }

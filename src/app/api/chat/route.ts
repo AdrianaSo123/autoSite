@@ -247,25 +247,48 @@ async function requestChatCompletion(
 async function summarizeToolResult(
     userMessage: string,
     toolResult: string,
-    history: IncomingMessage[]
+    history: IncomingMessage[],
+    retrievedChunks?: string[]
 ): Promise<string | null> {
     if (!process.env.OPENAI_API_KEY) return null;
 
+    let systemContent: string;
+    let userContent: string;
+
+    if (retrievedChunks && retrievedChunks.length > 0) {
+        // Synthesis prompt for semantic search results
+        const excerpts = retrievedChunks
+            .slice(0, 3)
+            .map((t, i) => `- Excerpt ${i + 1}: ${t.slice(0, 1000)}`)
+            .join("\n");
+
+        systemContent =
+            "You are answering a question using excerpts from blog content. " +
+            "Answer using only the provided excerpts. " +
+            "Do not fabricate blog content. " +
+            "Synthesize when multiple excerpts are relevant. " +
+            "Do not include any URLs or /blog/ paths in your response. " +
+            "Be concise (2-5 lines).";
+
+        userContent =
+            `Relevant excerpts from blog content:\n${excerpts}\n\n` +
+            `User query: ${userMessage}\n\n` +
+            `Tool output:\n${toolResult.slice(0, 2000)}`;
+    } else {
+        systemContent =
+            "Summarize tool output for an end user in 2-5 short lines. " +
+            "Keep key facts, remove noise, and do not include any URLs or /blog/ paths in your response. " +
+            "Do not invent data.";
+
+        userContent =
+            `User request: ${userMessage}\n\n` +
+            `Tool output:\n${toolResult.slice(0, 4000)}`;
+    }
+
     const summaryMessages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [
-        {
-            role: "system",
-            content:
-                "Summarize tool output for an end user in 2-5 short lines. " +
-                "Keep key facts, remove noise, and do not include any URLs or /blog/ paths in your response. " +
-                "Do not invent data.",
-        },
+        { role: "system", content: systemContent },
         ...history.slice(-4),
-        {
-            role: "user",
-            content:
-                `User request: ${userMessage}\n\n` +
-                `Tool output:\n${toolResult.slice(0, 4000)}`,
-        },
+        { role: "user", content: userContent },
     ];
 
     let summary = await requestChatCompletion(PRIMARY_MODEL, summaryMessages);
@@ -344,7 +367,11 @@ export async function POST(request: NextRequest) {
                 cleanToolResult = toolResult.slice(actionMatch[0].length);
             }
 
-            const summarized = await summarizeToolResult(message, cleanToolResult, history);
+            const retrievedChunks = sessionState.lastRetrievedChunks;
+            const summarized = await summarizeToolResult(
+                message, cleanToolResult, history,
+                retrievedChunks.length > 0 ? retrievedChunks : undefined
+            );
             const reply = summarized || cleanToolResult;
 
             if (summarized) {
